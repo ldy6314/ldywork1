@@ -13,7 +13,7 @@ flask-wtf = "*"
 flask-login = "*"
 
 [dev-packages]
-watchdog = "*"
+watchdog = "*"w
 
 [requires]
 python_version = "3.7"

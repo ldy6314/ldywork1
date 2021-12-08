@@ -15,7 +15,9 @@ class Student(db.Model):
 
 
 class User(db.Model, UserMixin):
-    pass
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), )
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column(db.String(80))
+    password = db.Column(db.String(80))
     # username, password_hash, permission
+    class_id = db.Column(db.Integer, default=0)
+    permission = db.Column(db.Integer, defalut=1)
