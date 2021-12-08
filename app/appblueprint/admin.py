@@ -1,11 +1,14 @@
-from app.admin import admin_bp
+from flask import Blueprint
 from app.forms import AddForm
 from flask import render_template
 
 
+admin_bp = Blueprint('appblueprint', __name__)
+
+
 @admin_bp.route('/')
 def index():
-    return "I am admin index"
+    return "I am appblueprint index"
 
 
 @admin_bp.route('/add', methods=['GET', 'POST'])

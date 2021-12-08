@@ -2,4 +2,8 @@ from flask import Blueprint
 
 signup_bp = Blueprint('signup', __name__)
 
-from .views import *
+
+@signup_bp.route('/')
+def index():
+    return "I am signup index"
+
