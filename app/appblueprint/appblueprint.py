@@ -1,5 +1,4 @@
 from flask import Blueprint
-
 from forms import LoginForm, AddForm
 from flask import flash, render_template
 from models import User
