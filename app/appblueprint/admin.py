@@ -1,5 +1,5 @@
 from flask import Blueprint
-from app.forms import AddForm
+from forms import AddForm
 from flask import render_template
 
 

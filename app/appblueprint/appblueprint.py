@@ -1,9 +1,8 @@
 from flask import Blueprint
 
-from app.forms import LoginForm, AddForm
+from forms import LoginForm, AddForm
 from flask import request, render_template
-from app.extensions import db
-from app.models import User
+from models import User
 
 
 app_bp = Blueprint('rootbp', __name__)

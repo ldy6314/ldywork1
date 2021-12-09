@@ -1,9 +1,9 @@
 from flask import Flask
 from app.appblueprint.admin import admin_bp
 from app.appblueprint.signup import signup_bp
-from app.settings import config
+from settings import config
 import os
-from app.extensions import bootstrap, db
+from extensions import bootstrap, db
 # ,login_manager
 from app.appblueprint.appblueprint import app_bp
 
