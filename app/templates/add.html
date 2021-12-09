@@ -9,9 +9,9 @@
 <br>
 {% for message in get_flashed_messages()%}
     <div class="row">
-    <div class="col-md-4 offset-4 alert alert-success">
-         {{message}}
-    </div>
+        <div class="col-md-4 offset-4 alert alert-success">
+            {{message}}
+        </div>
         {%endfor%}
-{% endblock%}
     </div>
+{% endblock%}
