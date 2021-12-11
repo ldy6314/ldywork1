@@ -6,6 +6,7 @@ from models import User
 from extensions import db, login_manager
 from flask_login import login_user, logout_user
 
+
 app_bp = Blueprint('rootbp', __name__)
 
 
@@ -23,10 +24,20 @@ def index():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        username = form.data['username']
+        username = form.username.data
+        password = form.password.data
+        remember_me = form.remember_me.data
         user = User.query.filter_by(username=username).first()
-        login_user(user)
-        flash('login success!')
+        if user:
+            print(user.username)
+            print(user.password_hash)
+            if user.validate_password(password):
+                login_user(user, remember_me)
+                flash('login success!')
+            else:
+                flash('账号或密码不正确')
+        else:
+            flash('账号或密码不正确')
 
     return render_template('login.html', form=form)
 
@@ -49,10 +60,10 @@ def add():
         class_id = 10 * "一二三四五六".index(data['grd'][0]) + int(data['cls'][:-1])
         permission = ['学生', '班主任', '管理员'].index(data['role'])
         name = data['name']
-        user = User(username=username, password=password, class_id=class_id, permission=permission, name=name)
+        user = User(username=username, password_hash=0, class_id=class_id, permission=permission, name=name)
+        user.set_password(password)
         db.session.add(user)
         db.session.commit()
         flash('账户添加成功')
-
 
     return render_template('add.html', form=form)
