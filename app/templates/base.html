@@ -7,15 +7,14 @@
 </head>
 <body>
 <div class="container">
-     <div class="row text-center">
-         <div class="col-md-12">
-             <h3>合肥市锦城小学艺体俱乐部报名系统</h3>
-         </div>
-     </div>
        <div class="row">
            <div class="col-md-12">
-               {% block navbar%}
-               <nav class="navbar navbar-expand-lg navbar-light">
+    {% block navbar%}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">锦小艺体俱乐部</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">
       <li class="nav-item active">
@@ -55,11 +54,9 @@
                {%endblock%}
         </div>
     </div>
-    <hr>
      {% block content%}
           <h3 class="text-center">我是内容栏</h3>
     {%endblock%}
-
 </div>
 {{bootstrap.load_js()}}
 </body>
