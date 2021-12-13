@@ -2,7 +2,7 @@ from flask import Blueprint, url_for, redirect
 
 from forms import LoginForm, AddForm
 from flask import flash, render_template
-from models import User
+from models import User, Subject
 from extensions import db, login_manager
 from flask_login import login_user, logout_user
 
@@ -67,3 +67,8 @@ def add():
         flash('账户添加成功')
 
     return render_template('add.html', form=form)
+
+
+@app_bp.route('/subject_info')
+def show_subjects():
+    return "subjects info"

@@ -8,6 +8,4 @@ def index():
     return "I am signup index"
 
 
-@signup_bp.route('/subject_info')
-def show_subjects():
-    return "subjects info"
+

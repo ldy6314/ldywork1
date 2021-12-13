@@ -1,0 +1,22 @@
+{% extends 'base.html'%}
+{% from 'bootstrap/form.html' import render_form %}
+{% block content%}
+<div class="row">
+    <div class="col-md-4 offset-4">
+        <h3 class="text-center">添加科目</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4 offset-4" >
+        {{render_form(form)}}
+    </div>
+</div>
+<br>
+{% for message in get_flashed_messages()%}
+    <div class="row">
+        <div class="col-md-4 offset-4 alert alert-success">
+            {{message}}
+        </div>
+        {%endfor%}
+    </div>
+{% endblock%}
