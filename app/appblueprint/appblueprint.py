@@ -71,4 +71,6 @@ def add():
 
 @app_bp.route('/subject_info')
 def show_subjects():
-    return render_template('showsubject.html')
+    # page = request.args.get('page', default=1, type=int)
+    infos = Subject.query.all()
+    return render_template('showsubject.html', infos=infos)

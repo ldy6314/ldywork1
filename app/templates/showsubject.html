@@ -2,7 +2,7 @@
 {% block content%}
 <h3 class="text-center">合肥市锦城小学艺体俱乐部课程开设信息表</h3>
 <table class="table  table-bordered table-striped text-center">
-    <thead class="thead-dark">
+    <thead class="thead-light">
     <tr>
         <th>编号</th>
         <th>名称</th>
@@ -10,5 +10,15 @@
         <th>价格</th>
     </tr>
     </thead>
+    <tbody>
+    {% for info in infos %}
+    <tr>
+        <td>{{loop.index}}</td>
+        <td>{{info.name}}</td>
+        <td>{{info.time}}</td>
+        <td>{{info.price}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
 </table>
 {% endblock %}
