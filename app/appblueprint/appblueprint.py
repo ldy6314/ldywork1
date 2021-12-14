@@ -71,4 +71,4 @@ def add():
 
 @app_bp.route('/subject_info')
 def show_subjects():
-    return "subjects info"
+    return render_template('showsubject.html')
