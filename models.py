@@ -51,8 +51,11 @@ class Subject(db.Model):
     name = db.Column(db.String(50))
     time = db.Column(db.String(50))
     price = db.Column(db.Integer)
+    canceled = db.Column(db.Integer)
+    remark = db.Column(db.Text)
     students = db.relationship(
         'Student',
         secondary=association_table,
         back_populates='subjects'
     )
+

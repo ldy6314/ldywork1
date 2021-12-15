@@ -26,7 +26,8 @@ def add():
 def add_subject():
     form = AddSubjectForm()
     if form.validate_on_submit():
-        subject = Subject(name=form.data['name'], time=form.data['time'], price=form.data['price'])
+        subject = Subject(name=form.data['name'], time=form.data['time'], price=form.data['price'],
+                          remark=form.data['remark'])
 
         db.session.add(subject)
         db.session.commit()

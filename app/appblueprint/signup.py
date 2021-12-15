@@ -8,4 +8,6 @@ def index():
     return "I am signup index"
 
 
-
+@signup_bp.route('/signup')
+def signup():
+    pass
