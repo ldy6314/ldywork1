@@ -1,4 +1,4 @@
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectField,IntegerField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectField,IntegerField, TextAreaField
 from wtforms.validators import DataRequired, Length, ValidationError
 from flask_wtf import FlaskForm
 from models import User, Subject
@@ -39,6 +39,7 @@ class AddSubjectForm(FlaskForm):
                                       '星期日下午3：50-5：20',
                                       ])
     price = IntegerField('价格', validators=[DataRequired()])
+    remark = TextAreaField('备注')
     submit = SubmitField('添加')
 
     def validate_name(form, field):
