@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 tornado = "*"
+openpyxl = "*"
+flask-migrate = "*"
 
 [dev-packages]
 
