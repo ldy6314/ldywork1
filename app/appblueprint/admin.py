@@ -74,6 +74,13 @@ def download_subjects():
     return rv
 
 
-@admin_bp.route('/class/<int:class_id>')
-def class_admin(class_id=0):
-    return "welcome {}".format(class_id)
+@admin_bp.route('/school_admin')
+def school_admin():
+    return "welcome to school"
+
+
+@admin_bp.route('/class_admin')
+def class_admin():
+    return "welcome to class"
+
+
