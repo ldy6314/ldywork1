@@ -1,5 +1,4 @@
-from flask import Blueprint, url_for, redirect
-
+from flask import Blueprint, url_for, redirect, session
 from forms import LoginForm, AddForm
 from flask import flash, render_template
 from models import User, Subject
@@ -29,11 +28,11 @@ def login():
         remember_me = form.remember_me.data
         user = User.query.filter_by(username=username).first()
         if user:
-            print(user.username)
-            print(user.password_hash)
             if user.validate_password(password):
                 login_user(user, remember_me)
                 flash('login success!')
+                session["class_id"] = user.class_id
+                session["permission"] = user.permission
             else:
                 flash('账号或密码不正确')
         else:

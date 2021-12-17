@@ -6,7 +6,17 @@ from extensions import db
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Side
 from io import BytesIO
+from flask_login import login_required
+
+
 admin_bp = Blueprint('appblueprint', __name__)
+
+
+@admin_bp.before_request
+@login_required
+def login_required():
+    pass
+
 
 
 @admin_bp.route('/')
@@ -76,11 +86,11 @@ def download_subjects():
 
 @admin_bp.route('/school_admin')
 def school_admin():
-    return "welcome to school"
+    return render_template('schooladmin.html')
 
 
 @admin_bp.route('/class_admin')
 def class_admin():
-    return "welcome to class"
+    return render_template('classadmin.html')
 
 
