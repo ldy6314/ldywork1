@@ -66,11 +66,14 @@ def download_subjects():
     for i in "BCE":
         ws.column_dimensions[i].width = 30
 
-
-
     virtual_book = BytesIO()
     wb.save(virtual_book)
     virtual_book.seek(0)
     rv = send_file(virtual_book, as_attachment=True, attachment_filename="test.xlsx")
     rv.headers['Content-Disposition'] += ";filename*=utf-8' 'test.xlsx"
     return rv
+
+
+@admin_bp.route('/class/<int:class_id>')
+def class_admin(class_id=0):
+    return "welcome {}".format(class_id)
