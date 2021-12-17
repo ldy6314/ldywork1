@@ -4,7 +4,7 @@ from flask import flash, render_template
 from models import User, Subject
 from extensions import db, login_manager
 from flask_login import login_user, logout_user
-
+from utils import redirect_back
 
 app_bp = Blueprint('rootbp', __name__)
 
@@ -65,7 +65,7 @@ def add():
         db.session.commit()
         flash('账户添加成功')
 
-    return render_template('add.html', form=form)
+    redirect_back('/')
 
 
 @app_bp.route('/subject_info')

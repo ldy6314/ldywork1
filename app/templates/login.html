@@ -1,6 +1,13 @@
 {% extends 'base.html'%}
 {% from 'bootstrap/form.html' import render_form %}
 {% block content%}
+{% for message in get_flashed_messages()%}
+    <div class="row">
+        <div class="col-md-4 offset-4 alert alert-success">
+            {{message}}
+        </div>
+        {%endfor%}
+    </div>
  <div class="col-md-4 offset-4 col-sm-12">
         <h3 class="text-center">用户登录</h3>
     </div>
@@ -10,11 +17,5 @@
     </div>
 </div>
 <br>
-{% for message in get_flashed_messages()%}
-    <div class="row">
-        <div class="col-md-4 offset-4 alert alert-success">
-            {{message}}
-        </div>
-        {%endfor%}
-    </div>
+
 {% endblock%}
