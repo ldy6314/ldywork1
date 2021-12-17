@@ -35,8 +35,8 @@ def login():
                 # flash('login success!')
                 session["class_id"] = class_id
                 session["permission"] = permission
-                arg_next = request.args.get('next')
-                if not arg_next  or is_safe_url(arg_next):
+                arg_next = request.args.get('next', '/')
+                if is_safe_url(arg_next):
                     return redirect(arg_next)
 
             else:
@@ -50,6 +50,7 @@ def login():
 @app_bp.route('/logout')
 def logout():
     logout_user()
+    session.clear()
     return redirect(url_for('rootbp.index'))
 
 
@@ -57,7 +58,6 @@ def logout():
 def add():
     form = AddForm()
     res = User.query.first()
-    print(res)
     if form.validate_on_submit():
         data = form.data
         username = data['username']
@@ -76,6 +76,5 @@ def add():
 
 @app_bp.route('/subject_info')
 def show_subjects():
-    # page = request.args.get('page', default=1, type=int)
     infos = Subject.query.all()
     return render_template('showsubject.html', infos=infos)

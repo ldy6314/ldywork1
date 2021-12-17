@@ -18,7 +18,7 @@ def create_app(config_name=None):
     login_manager.init_app(app)
     login_manager.login_message = '请登录'
     login_manager.login_view = "/login"
-    login_manager.needs_refresh_message = 'Refresh for login!'
+    login_manager.needs_refresh_message = '刷新登录'
 
     app.register_blueprint(app_bp)
     app.register_blueprint(admin_bp, url_prefix='/admin')

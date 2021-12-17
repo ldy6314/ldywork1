@@ -23,8 +23,8 @@ class AddForm(FlaskForm):
     role = SelectField('角色', choices=['学生', '班主任', '管理员'])
     submit = SubmitField('登录')
 
-    def validate_username(form, filed):
-        username = filed.data
+    def validate_username(form, field):
+        username = field.data
         print(username)
         res = User.query.filter_by(username=username).count()
         if res == 1:
