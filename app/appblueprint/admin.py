@@ -1,4 +1,4 @@
-from flask import Blueprint, send_file
+from flask import Blueprint, send_file, session
 from forms import AddForm, AddSubjectForm
 from flask import render_template
 from models import Subject
@@ -16,7 +16,6 @@ admin_bp = Blueprint('appblueprint', __name__)
 @login_required
 def login_required():
     pass
-
 
 
 @admin_bp.route('/')
@@ -86,11 +85,18 @@ def download_subjects():
 
 @admin_bp.route('/school_admin')
 def school_admin():
-    return render_template('schooladmin.html')
+    permission = session['permission']
+    print(permission)
+    if permission == 2:
+        return render_template('schooladmin.html')
+    else:
+        return render_template("permission_deny.html")
 
 
 @admin_bp.route('/class_admin')
 def class_admin():
-    return render_template('classadmin.html')
-
+    permission = session['permission']
+    if permission == 1:
+        return render_template('classadmin.html')
+    return render_template("permission_deny.html")
 

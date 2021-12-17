@@ -16,7 +16,7 @@ def create_app(config_name=None):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
-    login_manager.login_message = 'Please login first!'
+    login_manager.login_message = '请登录'
     login_manager.login_view = "/login"
     login_manager.needs_refresh_message = 'Refresh for login!'
 

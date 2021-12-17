@@ -1,10 +1,10 @@
-from flask import Blueprint, url_for, redirect, session
+from flask import Blueprint, url_for, redirect, session, request
 from forms import LoginForm, AddForm
 from flask import flash, render_template
 from models import User, Subject
 from extensions import db, login_manager
 from flask_login import login_user, logout_user
-from utils import redirect_back
+from utils import is_safe_url
 
 app_bp = Blueprint('rootbp', __name__)
 
@@ -28,11 +28,17 @@ def login():
         remember_me = form.remember_me.data
         user = User.query.filter_by(username=username).first()
         if user:
+            class_id = user.class_id
+            permission = user.permission
             if user.validate_password(password):
                 login_user(user, remember_me)
-                flash('login success!')
-                session["class_id"] = user.class_id
-                session["permission"] = user.permission
+                # flash('login success!')
+                session["class_id"] = class_id
+                session["permission"] = permission
+                arg_next = request.args.get('next')
+                if not arg_next  or is_safe_url(arg_next):
+                    return redirect(arg_next)
+
             else:
                 flash('账号或密码不正确')
         else:
@@ -65,7 +71,7 @@ def add():
         db.session.commit()
         flash('账户添加成功')
 
-    redirect_back('/')
+    return render_template("add.html", form=form)
 
 
 @app_bp.route('/subject_info')

@@ -38,6 +38,8 @@ class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     class_id = db.Column(db.Integer, db.ForeignKey('class.id'))
     name = db.Column(db.String(20))
+    contact1 = db.Column(db.String(20))
+    contact2 = db.Column(db.String(20))
     subjects = db.relationship(
         'Subject',
         secondary=association_table,
