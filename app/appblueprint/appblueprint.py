@@ -24,25 +24,16 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         username = form.username.data
-        password = form.password.data
         remember_me = form.remember_me.data
         user = User.query.filter_by(username=username).first()
-        if user:
-            class_id = user.class_id
-            permission = user.permission
-            if user.validate_password(password):
-                login_user(user, remember_me)
-                # flash('login success!')
-                session["class_id"] = class_id
-                session["permission"] = permission
-                arg_next = request.args.get('next', '/')
-                if is_safe_url(arg_next):
-                    return redirect(arg_next)
-
-            else:
-                flash('账号或密码不正确')
-        else:
-            flash('账号或密码不正确')
+        class_id = user.class_id
+        permission = user.permission
+        login_user(user, remember_me)
+        session["class_id"] = class_id
+        session["permission"] = permission
+        arg_next = request.args.get('next',  '/')
+        if is_safe_url(arg_next):
+            return redirect(arg_next)
 
     return render_template('login.html', form=form)
 

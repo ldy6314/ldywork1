@@ -1,5 +1,5 @@
 from flask import Blueprint, send_file, session
-from forms import AddForm, AddSubjectForm
+from forms import AddForm, AddSubjectForm, UploadClassForm
 from flask import render_template
 from models import Subject
 from extensions import db
@@ -95,8 +95,9 @@ def school_admin():
 
 @admin_bp.route('/class_admin')
 def class_admin():
+    form = UploadClassForm()
     permission = session['permission']
     if permission == 1:
-        return render_template('classadmin.html')
+        return render_template('classadmin.html', form=form)
     return render_template("permission_deny.html")
 

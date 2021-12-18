@@ -1,4 +1,5 @@
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectField,IntegerField, TextAreaField
+from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms.validators import DataRequired, Length, ValidationError
 from flask_wtf import FlaskForm
 from models import User, Subject
@@ -13,6 +14,15 @@ class LoginForm(FlaskForm):
     remember_me = BooleanField('记住我')
     submit = SubmitField('登录')
 
+    def validate_username(self, field):
+        username = field.data
+        user = User.query.filter_by(username=username).first()
+        if not user:
+            raise ValidationError('账号不存在或密码错误!')
+
+        if not user.validate_password(self.password.data):
+            raise ValidationError('账号不存在或密码错误!')
+
 
 class AddForm(FlaskForm):
     username = StringField('用户名', validators=[DataRequired(), Length(8)])
@@ -23,7 +33,7 @@ class AddForm(FlaskForm):
     role = SelectField('角色', choices=['学生', '班主任', '管理员'])
     submit = SubmitField('登录')
 
-    def validate_username(form, field):
+    def validate_username(self, field):
         username = field.data
         print(username)
         res = User.query.filter_by(username=username).count()
@@ -47,3 +57,8 @@ class AddSubjectForm(FlaskForm):
         res = Subject.query.filter_by(name=name).count()
         if res:
             raise ValidationError('科目已经存在')
+
+
+class UploadClassForm(FlaskForm):
+    file = FileField('上传班级报名表', validators=[FileRequired(), FileAllowed(['xlsx'])])
+    submit = SubmitField()

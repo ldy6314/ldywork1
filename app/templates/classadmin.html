@@ -15,12 +15,28 @@
                 </ul>
          </div>
              <!-- Tab panes -->
-     <div class="col-md-12">
-       <div class="tab-content ">
-                <div class="tab-pane active container" id="home"><a href="#">下载报名表</a></div>
+       <div class="tab-content m-10">
+
+                <div class="tab-pane active container  clear-fix" id="home">
+                    <div class="container">
+                         <div class="row">
+                        <div class="col-md-12">
+                             <form >
+
+                       {% from 'bootstrap/form.html' import render_form_row%}
+                           {{ form.csrf_token() }}
+                        {{render_form_row([form.file])}}
+                                 {{render_form_row([form.submit])}}
+                    </form>
+                        </div>
+                    </div>
+                    </div>
+
+
+                </div>
+
                 <div class="tab-pane container" id="menu1">报名信息</div>
                 <div class="tab-pane container" id="menu2">已取消项目处理</div>
-     </div>
 
      </div>
 
