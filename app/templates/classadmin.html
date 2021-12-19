@@ -1,48 +1,43 @@
 {% extends "base.html"%}
+{% from 'bootstrap/form.html' import render_form%}
+{% from 'bootstrap/form.html' import render_form_row%}
 {% block content%}
- <div class="row">
-         <div class="col-md-12">
-               <ul class="nav nav-tabs">
-                  <li class="nav-item">
-                    <a class="nav-link active" data-toggle="tab" href="#home">报名表上传</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#menu1">报名信息</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" data-toggle="tab" href="#menu2">已取消项目</a>
-                  </li>
-                </ul>
-         </div>
-             <!-- Tab panes -->
-       <div class="tab-content m-10">
 
-                <div class="tab-pane active container  clear-fix" id="home">
-                    <div class="container">
-                         <div class="row">
-                        <div class="col-md-12">
-                             <form >
+<ul class="nav nav-tabs">
+  <li class="nav-item">
+    <a class="nav-link active" data-toggle="tab" href="#home">报名表上传</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#menu1">报名信息</a>
+  </li>
+   <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#menu2">添加单个学生</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#menu3">已取消项目处理</a>
+  </li>
 
-                       {% from 'bootstrap/form.html' import render_form_row%}
-                           {{ form.csrf_token() }}
-                        {{render_form_row([form.file])}}
-                                 {{render_form_row([form.submit])}}
-                    </form>
-                        </div>
-                    </div>
-                    </div>
+</ul>
+     <!-- Tab panes -->
+<div class="tab-content">
 
+    <div class="tab-pane active container" id="home">
+        {{render_form(form)}}
+        <hr>
+        <a href="#">下载空报名表</a>
+    </div>
 
-                </div>
+    <div class="tab-pane container" id="menu1">
+        报名信息
+    </div>
+    <div class="tab-pane container" id="menu2">
+       {{csrf_token}}
+         {{render_form_row([form1.name, form1.contact1, form1.contact2])}}
+        {{render_form_row([form1.sub1,form1.sub2, form1.sub3, form1.sub4])}}
+        {{render_form_row([form1.add_submit])}}
 
-                <div class="tab-pane container" id="menu1">报名信息</div>
-                <div class="tab-pane container" id="menu2">已取消项目处理</div>
-
-     </div>
-
-
-
-
-</div>
-
+    </div>
+    <div class="tab-pane container" id="menu3">
+        已取消项目处理</div>
+    </div>
 {%endblock%}

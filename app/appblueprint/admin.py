@@ -1,5 +1,5 @@
-from flask import Blueprint, send_file, session
-from forms import AddForm, AddSubjectForm, UploadClassForm
+from flask import Blueprint, send_file, session, request
+from forms import AddForm, AddSubjectForm, UploadClassForm, AddStudentForm, UploadSubjectsForm
 from flask import render_template
 from models import Subject
 from extensions import db
@@ -45,8 +45,9 @@ def add_subject():
         res = Subject.query.all()
         for i in res:
             print(i.name)
-
-    return render_template('addsubject.html', form=form)
+        return "成功"
+    else:
+        return "课程已经存在"
 
 
 @admin_bp.route('/download_subjects')
@@ -88,7 +89,9 @@ def school_admin():
     permission = session['permission']
     print(permission)
     if permission == 2:
-        return render_template('schooladmin.html')
+        form = UploadSubjectsForm()
+        form1 = AddSubjectForm()
+        return render_template('schooladmin.html', form=form, form1=form1)
     else:
         return render_template("permission_deny.html")
 
@@ -96,8 +99,9 @@ def school_admin():
 @admin_bp.route('/class_admin')
 def class_admin():
     form = UploadClassForm()
+    form1 = AddStudentForm()
     permission = session['permission']
     if permission == 1:
-        return render_template('classadmin.html', form=form)
+        return render_template('classadmin.html', form=form, form1=form1)
     return render_template("permission_deny.html")
 

@@ -1,11 +1,11 @@
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectField,IntegerField, TextAreaField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectField, IntegerField, TextAreaField
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms.validators import DataRequired, Length, ValidationError
 from flask_wtf import FlaskForm
 from models import User, Subject
 
-grade_list = [i+'年级' for i in "一二三四五六"]
-class_list = [str(i+1)+'班' for i in range(10)]
+grade_list = [i + '年级' for i in "一二三四五六"]
+class_list = [str(i + 1) + '班' for i in range(10)]
 
 
 class LoginForm(FlaskForm):
@@ -50,7 +50,7 @@ class AddSubjectForm(FlaskForm):
                                       ])
     price = IntegerField('价格', validators=[DataRequired()])
     remark = TextAreaField('备注')
-    submit = SubmitField('添加')
+    submit = SubmitField('添加', render_kw={"id": "add_subject_button"})
 
     def validate_name(form, field):
         name = field.data
@@ -61,4 +61,20 @@ class AddSubjectForm(FlaskForm):
 
 class UploadClassForm(FlaskForm):
     file = FileField('上传班级报名表', validators=[FileRequired(), FileAllowed(['xlsx'])])
-    submit = SubmitField()
+    submit = SubmitField('上传', render_kw={"id": "submit"})
+
+
+class UploadSubjectsForm(FlaskForm):
+    file = FileField('上传课程信息表', validators=[FileAllowed(['xlsx'])])
+    submit = SubmitField('上传', render_kw={"id": "submit"})
+
+
+class AddStudentForm(FlaskForm):
+    name = StringField('姓名', validators=[DataRequired()])
+    contact1 = StringField('联系电话1', validators=[DataRequired()])
+    contact2 = StringField('联系电话2')
+    sub1 = SelectField('项目一', choices=["", 1, 2, 3, 4, 5, 6, 7])
+    sub2 = SelectField('项目二', choices=["", 1, 2, 3, 4, 5, 6, 7])
+    sub3 = SelectField('项目三', choices=["", 1, 2, 3, 4, 5, 6, 7])
+    sub4 = SelectField('项目四', choices=["", 1, 2, 3, 4, 5, 6, 7])
+    add_submit = SubmitField('添加')
