@@ -10,53 +10,73 @@
   <li class="nav-item">
     <a class="nav-link" data-toggle="tab" href="#menu1">课程管理</a>
   </li>
-   <li class="nav-item">
+  <li class="nav-item">
     <a class="nav-link" data-toggle="tab" href="#menu2">班级汇总</a>
   </li>
   <li class="nav-item">
     <a class="nav-link" data-toggle="tab" href="#menu3">俱乐部汇总</a>
   </li>
-    <li class="nav-item">
+  <li class="nav-item">
     <a class="nav-link" data-toggle="tab" href="#menu4">课程添加</a>
   </li>
 
 </ul>
-     <!-- Tab panes -->
+<!-- Tab panes -->
 <div class="tab-content">
 
-    <div class="tab-pane active container" id="home">
-      {{render_form(form)}}
-    </div>
+  <div class="tab-pane active container" id="home">
+    {{render_form(form)}}
+  </div>
 
-    <div class="tab-pane container" id="menu1">
-       课程管理
+  <div class="tab-pane container" id="menu1">
+    课程管理
+  </div>
+  <div class="tab-pane container" id="menu2">
+    班级汇总
+  </div>
+  <div class="tab-pane container" id="menu3">
+    俱乐部汇总
+  </div>
+  <div class="tab-pane container" id="menu4">
+    <div class="row">
+      <div class="col-md-6 offset-3">
+        {{render_form(form1, id="add_subject_form")}}
+      </div>
     </div>
-    <div class="tab-pane container" id="menu2">
-        班级汇总
+  </div>
+  <br>
+   <div class="row">
+      <div class="col-md-6 offset-3" >
+       <div id="result">
+
+       </div>
+      </div>
     </div>
-    <div class="tab-pane container" id="menu3">
-        俱乐部汇总
-    </div>
-     <div class="tab-pane container" id="menu4">
-        <div class="row">
-            <div class="col-md-6 offset-3" >
-                {{render_form(form1)}}
-            </div>
-        </div>
-    </div>
-    </div>
+</div>
 {%endblock%}
+
 {%block script%}
 {{super()}}
 <script>
-    $(function(){
-        $("#add_subject_button").click(function(){
-            $.ajax(
-
-
-
-            )
-        })
+  $(function () {
+    $("#add_subject_form").submit(function (e) {
+      e.preventDefault()
+      $.ajax({
+        url: '/admin/add_subject',
+        type: 'post',
+        dataType: 'json',
+        data: $(this).serialize(),
+        success: function (res) {
+           res_str = res['result']
+           res_type = res['type']
+           $("#result").text(res_str).removeClass(res_type).addClass(res_type).fadeIn().fadeOut(3000)
+        },
+        error:function(xhr, e, obj)
+        {
+             alert(e);
+        }
+      })
     })
+  })
 </script>
 {% endblock%}
