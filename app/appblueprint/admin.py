@@ -1,4 +1,4 @@
-from flask import Blueprint, send_file, session, request
+from flask import Blueprint, send_file, session, jsonify, flash
 from forms import AddForm, AddSubjectForm, UploadClassForm, AddStudentForm, UploadSubjectsForm
 from flask import render_template
 from models import Subject
@@ -7,9 +7,9 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Side
 from io import BytesIO
 from flask_login import login_required
+from utils import redirect_back
 
-
-admin_bp = Blueprint('appblueprint', __name__)
+admin_bp = Blueprint('admin', __name__)
 
 
 @admin_bp.before_request
@@ -45,9 +45,9 @@ def add_subject():
         res = Subject.query.all()
         for i in res:
             print(i.name)
-        return "成功"
+        return jsonify({'result': "插入成功", "type": "alert alert-success"})
     else:
-        return "课程已经存在"
+        return jsonify({'result': "项目已经存在无法添加", "type": "alert  alert-danger"})
 
 
 @admin_bp.route('/download_subjects')
@@ -62,10 +62,10 @@ def download_subjects():
         ws.append([i[0], i[1].name, i[1].time, i[1].price, i[1].remark])
     ws.merge_cells("A1:E1")
     border = Border(
-        left=Side(style='medium',color='FF000000'),
-        right=Side(style='medium',color='FF000000'),
-        bottom=Side(style='medium',color='FF000000'),
-        top=Side(style='medium',color='FF000000')
+        left=Side(style='medium', color='FF000000'),
+        right=Side(style='medium', color='FF000000'),
+        bottom=Side(style='medium', color='FF000000'),
+        top=Side(style='medium', color='FF000000')
     )
     align_center = Alignment(horizontal='center', vertical='center')
     ws_area = ws["A1:E22"]
@@ -84,14 +84,15 @@ def download_subjects():
     return rv
 
 
-@admin_bp.route('/school_admin')
+@admin_bp.route('/school_admin', methods=['GET', 'POST'])
 def school_admin():
     permission = session['permission']
     print(permission)
     if permission == 2:
         form = UploadSubjectsForm()
+        subjects = Subject.query.all()
         form1 = AddSubjectForm()
-        return render_template('schooladmin.html', form=form, form1=form1)
+        return render_template('schooladmin.html', form=form, form1=form1, subjects=subjects)
     else:
         return render_template("permission_deny.html")
 
@@ -105,3 +106,19 @@ def class_admin():
         return render_template('classadmin.html', form=form, form1=form1)
     return render_template("permission_deny.html")
 
+
+@admin_bp.route('/set_canceled/<int:subject_id>')
+def set_canceled(subject_id):
+    subject = Subject.query.filter_by(id=subject_id).first()
+    subject.canceled = 1
+    db.session.commit()
+    return redirect_back('/')
+
+
+@admin_bp.route('/delete/<int:subject_id>', methods=['GET', 'POST'])
+def delete_subject(subject_id):
+    subject = Subject.query.filter_by(id=subject_id).first()
+    db.session.delete(subject)
+    flash("已经删除 {}".format(subject.name))
+    db.session.commit()
+    return redirect_back('/')

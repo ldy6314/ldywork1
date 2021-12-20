@@ -5,58 +5,124 @@
 
 <ul class="nav nav-tabs">
   <li class="nav-item">
-    <a class="nav-link active" data-toggle="tab" href="#home">课程上传</a>
+    <a class="nav-link active" data-toggle="tab" href="#home">课程管理</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" data-toggle="tab" href="#menu1">课程管理</a>
+    <a class="nav-link" data-toggle="tab" href="#menu1">课程上传</a>
   </li>
-   <li class="nav-item">
+  <li class="nav-item">
     <a class="nav-link" data-toggle="tab" href="#menu2">班级汇总</a>
   </li>
   <li class="nav-item">
     <a class="nav-link" data-toggle="tab" href="#menu3">俱乐部汇总</a>
   </li>
-    <li class="nav-item">
+  <li class="nav-item">
     <a class="nav-link" data-toggle="tab" href="#menu4">课程添加</a>
   </li>
 
 </ul>
-     <!-- Tab panes -->
+<!-- Tab panes -->
 <div class="tab-content">
 
-    <div class="tab-pane active container" id="home">
-      {{render_form(form)}}
-    </div>
+  <div class="tab-pane  container" id="menu1">
+    {{render_form(form)}}
+  </div>
 
-    <div class="tab-pane container" id="menu1">
-       课程管理
-    </div>
-    <div class="tab-pane container" id="menu2">
-        班级汇总
-    </div>
-    <div class="tab-pane container" id="menu3">
-        俱乐部汇总
-    </div>
-     <div class="tab-pane container" id="menu4">
+  <div class="tab-pane active container" id="home">
+
+    <table class="table table-striped">
+      <tr>
+        {% for message in get_flashed_messages()%}
         <div class="row">
-            <div class="col-md-6 offset-3" >
-                {{render_form(form1)}}
-            </div>
+        <div class="col-md-4 offset-4 alert alert-success">
+            {{message}}
         </div>
+        {%endfor%}
+        </div>
+      </tr>
+        <thead>
+          <tr>
+            <th>编号</th>
+            <th>名称</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+           {% for subject in subjects %}
+               <tr>
+                 <td>{{loop.index}}</td>
+                 <td>{{subject.name}}</td>
+                 <td>
+                   {% if subject.canceled %}
+                   已取消
+                   {% else %}
+                   正常
+                   {% endif %}
+                 </td>
+                 <td>
+                   <a class="btn btn-info btn-sm" href="/admin/set_canceled/{{subject.id}}">
+                     取消
+                   </a>
+                   <form  style="display:inline" method="post" action="/admin/delete/{{subject.id}}">
+                     <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+                     <button type="submit"  class="btn btn-danger btn-sm" onclick="return confirm('确定删除？');">删除</button>
+                   </form>
+                 </td>
+                 <td>
+
+                 </td>
+               </tr>
+           {% endfor %}
+        </tbody>
+      </table>
+  </div>
+  <div class="tab-pane container" id="menu2">
+    班级汇总
+  </div>
+  <div class="tab-pane container" id="menu3">
+    俱乐部汇总
+  </div>
+  <div class="tab-pane container" id="menu4">
+    <div class="row">
+      <div class="col-md-6 offset-3">
+        {{render_form(form1, id="add_subject_form")}}
+      </div>
     </div>
+  </div>
+  <br>
+   <div class="row">
+      <div class="col-md-6 offset-3" >
+       <div id="result">
+
+       </div>
+      </div>
     </div>
+</div>
 {%endblock%}
+
 {%block script%}
 {{super()}}
 <script>
-    $(function(){
-        $("#add_subject_button").click(function(){
-            $.ajax(
-
-
-
-            )
-        })
+  $(function () {
+    $("#add_subject_form").submit(function (e) {
+      e.preventDefault()
+      $.ajax({
+        url: '/admin/add_subject',
+        type: 'post',
+        dataType: 'json',
+        data: $(this).serialize(),
+        success: function (res) {
+           res_str = res['result']
+           res_type = res['type']
+           $("#result").text(res_str).removeClass(res_type).addClass(res_type).fadeIn().fadeOut(3000)
+        },
+        error:function(xhr, e, obj)
+        {
+             alert(e);
+        }
+      })
     })
+  })
 </script>
 {% endblock%}
