@@ -1,6 +1,6 @@
 {% extends "base.html"%}
 {% from 'bootstrap/form.html' import render_form%}
-{% from 'bootstrap/form.html' import render_form_row%}
+{% from 'bootstrap/form.html' import render_field%}
 {% block content%}
 
 <ul class="nav nav-tabs">
@@ -25,7 +25,11 @@
 <div class="tab-content">
 
   <div class="tab-pane  container" id="menu1">
-    {{render_form(form)}}
+    <form method="post" action="/admin/upload_subjects" enctype="multipart/form-data">
+      {{form.csrf_token}}
+      {{render_field(form.file, accept=".xls, .xlsx")}}
+      {{form.submit}}
+    </form>
   </div>
 
   <div class="tab-pane active container" id="home">
@@ -104,9 +108,10 @@
 {%block script%}
 {{super()}}
 <script>
-  $(function () {
-    $("#add_subject_form").submit(function (e) {
+$(function(){
+       $("#add_subject_form").submit(function (e) {
       e.preventDefault()
+      alert('121313')
       $.ajax({
         url: '/admin/add_subject',
         type: 'post',
@@ -123,6 +128,8 @@
         }
       })
     })
-  })
+})
+
+
 </script>
 {% endblock%}
