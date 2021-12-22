@@ -1,4 +1,5 @@
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectField, IntegerField, TextAreaField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectField, IntegerField, TextAreaField,\
+    HiddenField
 from flask_wtf.file import FileField, FileRequired, FileAllowed
 from wtforms.validators import DataRequired, Length, ValidationError
 from flask_wtf import FlaskForm
@@ -43,11 +44,7 @@ class AddForm(FlaskForm):
 
 class AddSubjectForm(FlaskForm):
     name = StringField('名称', validators=[DataRequired(), Length(3)])
-    time = SelectField('日期', choices=['星期六上午8：00-9：30',
-                                      '星期六上午9：50-11：20',
-                                      '星期日下午2：00-3：30',
-                                      '星期日下午3：50-5：20',
-                                      ])
+    time = SelectField('日期')
     price = IntegerField('价格', validators=[DataRequired()])
     remark = TextAreaField('备注')
     submit = SubmitField('添加', render_kw={"id": "add_subject_button"})
@@ -78,3 +75,13 @@ class AddStudentForm(FlaskForm):
     sub3 = SelectField('项目三', choices=["", 1, 2, 3, 4, 5, 6, 7])
     sub4 = SelectField('项目四', choices=["", 1, 2, 3, 4, 5, 6, 7])
     add_submit = SubmitField('添加')
+
+"""
+class EditSubjectForm(AddSubjectForm):
+    def __int__(self, sub1, sub2, sub3, sub4):
+        super().__init__()
+        self.name = HiddenField()
+        self.canceled = BooleanField('设为取消')
+        self.submit = SubmitField('修改', render_kw={"id": "add_subject_button"})
+
+"""

@@ -1,9 +1,8 @@
 from urllib.parse import urlparse, urljoin
-from flask import request, redirect, url_for
+from flask import request, redirect, url_for, current_app
 from uuid import uuid4
 import os
 from openpyxl import load_workbook
-
 
 # 函数功能，传入当前url 跳转回当前url的前一个url
 def redirect_back(backurl, **kwargs):
@@ -42,3 +41,24 @@ def get_subjects(filename):
             subject.append(cell.value)
         subjects.append(subject)
     return subjects
+
+
+def to_class_id(class_string):
+    grd = class_string[0]
+    cls = class_string[1]
+    grade_list = current_app.config['GRADE_LIST']
+    class_of_grade = current_app.config['CLASS_OF_GRADE']
+    try:
+        grd_idx = grade_list.index(grd)
+        cls_idx = int(cls)
+    except IndexError:
+        return -1
+    return grd_idx*class_of_grade + cls_idx
+
+
+def parser_class_id(class_id):
+    grade_list = current_app.config['GRADE_LIST']
+    class_of_grade = current_app.config['CLASS_OF_GRADE']
+    grd = grade_list[class_id // class_of_grade]
+    cls = class_id % class_of_grade
+    return grd, cls

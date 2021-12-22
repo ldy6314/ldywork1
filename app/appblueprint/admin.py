@@ -7,7 +7,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment, Border, Side
 from io import BytesIO
 from flask_login import login_required
-from utils import redirect_back, random_filename, get_subjects
+from utils import redirect_back, random_filename, get_subjects, to_class_id, parser_class_id
 import os
 
 
@@ -109,11 +109,15 @@ def class_admin():
     return render_template("permission_deny.html")
 
 
-@admin_bp.route('/set_canceled/<int:subject_id>')
-def set_canceled(subject_id):
-    subject = Subject.query.filter_by(id=subject_id).first()
-    subject.canceled = 1
-    db.session.commit()
+@admin_bp.route('/edit_subject/<int:subject_id>')
+def edit_subject(subject_id):
+    time_list = db.session.query(Subject.time).all()
+    time_list = set(time_list)
+    for i in time_list:
+        print(i[0])
+    cid = to_class_id('三2')
+    print(to_class_id('三2'))
+    print(parser_class_id(cid))
     return redirect_back('/')
 
 
@@ -135,11 +139,20 @@ def upload_subjects():
         f = form.file.data
         filename = random_filename(f.filename)
         f.save(path+filename)
-        subjects = get_subjects(path+filename)
+        try:
+            subjects = get_subjects(path+filename)
+        except Exception as e:
+            print(e)
+            flash('上传的表格不正确')
+            return redirect_back('/')
         infos = []
         for i in subjects:
-            subject = Subject(name=i[0], time=i[1], price=int(i[2].strip('元')), canceled=0, remark="")
-            infos.append(subject)
+            res = Subject.query.filter_by(name=i[0]).first()
+            if not res:
+                subject = Subject(name=i[0], time=i[1], price=int(i[2].strip('元')), canceled=0, remark="")
+                infos.append(subject)
+            else:
+                flash('{}已经存在！'.format(i[0]))
 
         for i in infos:
             try:
@@ -148,8 +161,6 @@ def upload_subjects():
             except Exception as e:
                 print(e)
 
-
     else:
         flash('上传失败')
-    
-    return "hehe"
+    return redirect_back('/')
