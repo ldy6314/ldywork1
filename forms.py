@@ -65,7 +65,7 @@ class UploadClassForm(FlaskForm):
 
 
 class UploadSubjectsForm(FlaskForm):
-    file = FileField('上传课程信息表', validators=[FileAllowed(['xlsx'])])
+    file = FileField('上传课程信息表', validators=[FileRequired(), FileAllowed(['xls', 'xlsx'])])
     submit = SubmitField('上传', render_kw={"id": "submit"})
 
 

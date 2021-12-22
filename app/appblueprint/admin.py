@@ -1,13 +1,15 @@
-from flask import Blueprint, send_file, session, jsonify, flash
+from flask import Blueprint, send_file, session, jsonify, flash, current_app
 from forms import AddForm, AddSubjectForm, UploadClassForm, AddStudentForm, UploadSubjectsForm
 from flask import render_template
 from models import Subject
 from extensions import db
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment, Border, Side
 from io import BytesIO
 from flask_login import login_required
-from utils import redirect_back
+from utils import redirect_back, random_filename, get_subjects
+import os
+
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -122,3 +124,32 @@ def delete_subject(subject_id):
     flash("已经删除 {}".format(subject.name))
     db.session.commit()
     return redirect_back('/')
+
+
+@admin_bp.route('/upload_subjects', methods=['GET', 'POST'])
+def upload_subjects():
+    path = os.path.join(current_app.root_path, 'upload\\')
+    print("path=", path)
+    form = UploadSubjectsForm()
+    if form.validate_on_submit():
+        f = form.file.data
+        filename = random_filename(f.filename)
+        f.save(path+filename)
+        subjects = get_subjects(path+filename)
+        infos = []
+        for i in subjects:
+            subject = Subject(name=i[0], time=i[1], price=int(i[2].strip('元')), canceled=0, remark="")
+            infos.append(subject)
+
+        for i in infos:
+            try:
+                db.session.add(i)
+                db.session.commit()
+            except Exception as e:
+                print(e)
+
+
+    else:
+        flash('上传失败')
+    
+    return "hehe"
