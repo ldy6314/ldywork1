@@ -27,3 +27,7 @@ def create_app(config_name=None):
     app.register_blueprint(signup_bp, url_prefix='/signup')
     return app
 
+
+if __name__ == '__main__':
+    app1= create_app()
+    app1.run()

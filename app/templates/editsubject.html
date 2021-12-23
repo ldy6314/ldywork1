@@ -1,9 +1,10 @@
 {% extends "base.html"%}
-{% form 'bootstrap/form.html' import render_form%}
+{% from 'bootstrap/form.html' import render_form%}
 {% block content%}
 <div class="row">
-    <div class="col-md-6 col-sm-6">
-
+    <div class="col-md-4 col-sm-6 offset-4">
+        <div class="text-center h4">{{subject_name}}</div>
+        {{render_form(form)}}
     </div>
 </div>
 

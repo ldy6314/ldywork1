@@ -1,5 +1,5 @@
-from flask import Blueprint, send_file, session, jsonify, flash, current_app
-from forms import AddForm, AddSubjectForm, UploadClassForm, AddStudentForm, UploadSubjectsForm
+from flask import Blueprint, send_file, session, jsonify, flash, current_app, redirect, url_for
+from forms import AddForm, AddSubjectForm, UploadClassForm, AddStudentForm, UploadSubjectsForm, EditSubjectForm
 from flask import render_template
 from models import Subject
 from extensions import db
@@ -109,16 +109,35 @@ def class_admin():
     return render_template("permission_deny.html")
 
 
-@admin_bp.route('/edit_subject/<int:subject_id>')
+@admin_bp.route('/edit_subject/<int:subject_id>',methods=['GET', 'POST'])
 def edit_subject(subject_id):
     time_list = db.session.query(Subject.time).all()
-    time_list = set(time_list)
-    for i in time_list:
-        print(i[0])
-    cid = to_class_id('三2')
-    print(to_class_id('三2'))
-    print(parser_class_id(cid))
-    return redirect_back('/')
+    time_list = [time[0] for time in set(time_list)]
+    print("时间表", time_list)
+    form = EditSubjectForm()
+    form.time.choices = time_list
+    subject = Subject.query.get(subject_id)
+    if form.validate_on_submit():
+        print('prince=', form.price.data, "remark=", form.remark.data)
+        subject.time = form.time.data
+        subject.price = form.price.data
+        subject.remark = form.remark.data
+        subject.canceled = 1 if form.canceled else 0
+        db.session.commit()
+        flash("课程修改成功")
+        return redirect(url_for('admin.school_admin'))
+
+    name = subject.name
+    tm = subject.time
+    pr = subject.price
+    rm = subject.remark
+    cn = subject.canceled
+    form.remark.data = rm
+    form.price.data = pr
+    form.time.choices = time_list
+    form.time.data = tm
+    form.canceled = cn
+    return render_template('editsubject.html', form=form, subject_name=name)
 
 
 @admin_bp.route('/delete/<int:subject_id>', methods=['GET', 'POST'])

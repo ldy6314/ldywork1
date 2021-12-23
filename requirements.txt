@@ -1,9 +1,7 @@
 Flask~=2.0.2
 openpyxl~=3.0.9
-WTForms~=3.0.0
+WTForms~=3.0.1
 Werkzeug~=2.0.2
-tornado~=6.1
-SQLAlchemy~=1.4.28
+SQLAlchemy~=1.4.29
 alembic~=1.7.5
 python-dotenv~=0.19.2
-wtforms

@@ -44,7 +44,7 @@ class AddForm(FlaskForm):
 
 class AddSubjectForm(FlaskForm):
     name = StringField('名称', validators=[DataRequired(), Length(3)])
-    time = SelectField('日期')
+    time = SelectField('时间')
     price = IntegerField('价格', validators=[DataRequired()])
     remark = TextAreaField('备注')
     submit = SubmitField('添加', render_kw={"id": "add_subject_button"})
@@ -76,12 +76,8 @@ class AddStudentForm(FlaskForm):
     sub4 = SelectField('项目四', choices=["", 1, 2, 3, 4, 5, 6, 7])
     add_submit = SubmitField('添加')
 
-"""
-class EditSubjectForm(AddSubjectForm):
-    def __int__(self, sub1, sub2, sub3, sub4):
-        super().__init__()
-        self.name = HiddenField()
-        self.canceled = BooleanField('设为取消')
-        self.submit = SubmitField('修改', render_kw={"id": "add_subject_button"})
 
-"""
+class EditSubjectForm(AddSubjectForm):
+    name = HiddenField()
+    canceled = BooleanField('取消')
+    submit = SubmitField('修改', render_kw={'class': "btn-block"})
