@@ -216,19 +216,19 @@ def download_class_table():
         ws.add_data_validation(dv)
 
     border = Border(
-        left=Side(),
-        right=Side(),
-        bottom=Side(),
-        top=Side()
+        left=Side(border_style='thin', color="FF000000"),
+        right=Side(border_style='thin', color="FF000000"),
+        bottom=Side(border_style='thin', color="FF000000"),
+        top=Side(border_style='thin', color="FF000000")
     )
-    align_center = Alignment(horizontal='center', vertical='center')
-    ws_area = ws["A3:G50"]
+    align_center = Alignment(horizontal='center', vertical='center', wrapText=True)
+    ws_area = ws["A1:G50"]
     for row in ws_area:
         for cell in row:
             cell.alignment = align_center
             cell.border = border
     for i in "BCDEFG":
-        ws.column_dimensions[i].width = 20
+        ws.column_dimensions[i].width = 18
 
     virtual_book = BytesIO()
     wb.save(virtual_book)
