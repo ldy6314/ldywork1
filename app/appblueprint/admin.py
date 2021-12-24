@@ -7,9 +7,9 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment, Border, Side
 from io import BytesIO
 from flask_login import login_required
-from utils import redirect_back, random_filename, get_subjects, to_class_id, parser_class_id
+from utils import redirect_back, random_filename, get_subjects, get_time_list
 import os
-
+from openpyxl.worksheet.datavalidation import DataValidation
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -33,6 +33,11 @@ def add():
             print(i, form.data[i])
 
     return render_template('add.html', form=form)
+
+
+@admin_bp.route('/add_student')
+def add_student():
+    return "added"
 
 
 @admin_bp.route('/add_subject', methods=['GET', 'POST'])
@@ -60,7 +65,7 @@ def download_subjects():
     ws.append(["编号", "名称", "时间", "价格", "备注"])
     res = Subject.query.all()
     for i in enumerate(res, 1):
-        print(i[0], i[1].name, i[1].time, i[1].price, i[1].remark)
+        # print(i[0], i[1].name, i[1].time, i[1].price, i[1].remark)
         ws.append([i[0], i[1].name, i[1].time, i[1].price, i[1].remark])
     ws.merge_cells("A1:E1")
     border = Border(
@@ -89,12 +94,15 @@ def download_subjects():
 @admin_bp.route('/school_admin', methods=['GET', 'POST'])
 def school_admin():
     permission = session['permission']
-    print(permission)
     if permission == 2:
         form = UploadSubjectsForm()
         subjects = Subject.query.all()
         form1 = AddSubjectForm()
-        return render_template('schooladmin.html', form=form, form1=form1, subjects=subjects)
+        time_list = db.session.query(Subject.time).all()
+        time_list = [time[0] for time in set(time_list)]
+        form1.time.choices = time_list
+        form2 = AddForm()
+        return render_template('schooladmin.html', form=form, form1=form1, form2=form2, subjects=subjects)
     else:
         return render_template("permission_deny.html")
 
@@ -111,8 +119,7 @@ def class_admin():
 
 @admin_bp.route('/edit_subject/<int:subject_id>', methods=['GET', 'POST'])
 def edit_subject(subject_id):
-    time_list = db.session.query(Subject.time).all()
-    time_list = [time[0] for time in set(time_list)]
+    time_list = get_time_list
     form = EditSubjectForm()
     form.time.choices = time_list
     subject = Subject.query.get(subject_id)
@@ -182,3 +189,52 @@ def upload_subjects():
     else:
         flash('上传失败')
     return redirect_back('/')
+
+
+@admin_bp.route('/download_class_table')
+def download_class_table():
+    time_list = get_time_list()
+    subject_list = []
+    for time in time_list:
+        subjects = db.session.query(Subject.name).filter_by(time=time).all()
+        subjects = [i[0] for i in subjects]
+        subject_list.append(','.join(subjects))
+    wb = Workbook()
+    ws = wb.worksheets[0]
+    ws.append(["年级", "", "班级", ""])
+    col_name = ["姓名", "联系电话1", "联系电话2"]
+    tm_lst = [tm+'项目' for tm in time_list]
+    col_name.extend(tm_lst)
+    ws.append(col_name)
+    for infos in zip(subject_list, ["D3:D50", "E3:E50", "F3:F50", "G3:G50"]):
+        dv = DataValidation(type="list", formula1='"{}"'.format(infos[0]), allow_blank=True)
+        dv.error = "输入的值不在下拉列表中"
+        dv.errorTitle = "错误"
+        dv.prompt = "请从下拉列表中选择一个值"
+        dv.promptTitle = "列表选择"
+        dv.add(infos[1])
+        ws.add_data_validation(dv)
+
+    border = Border(
+        left=Side(),
+        right=Side(),
+        bottom=Side(),
+        top=Side()
+    )
+    align_center = Alignment(horizontal='center', vertical='center')
+    ws_area = ws["A3:G50"]
+    for row in ws_area:
+        for cell in row:
+            cell.alignment = align_center
+            cell.border = border
+    for i in "BCDEFG":
+        ws.column_dimensions[i].width = 20
+
+    virtual_book = BytesIO()
+    wb.save(virtual_book)
+    virtual_book.seek(0)
+    rv = send_file(virtual_book, as_attachment=True, attachment_filename="class_table.xlsx")
+    rv.headers['Content-Disposition'] += ";filename*=utf-8' 'test.xlsx"
+    return rv
+    return "heheh"
+

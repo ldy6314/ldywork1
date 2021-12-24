@@ -3,6 +3,8 @@ from flask import request, redirect, url_for, current_app
 from uuid import uuid4
 import os
 from openpyxl import load_workbook
+from extensions import db
+from models import Subject
 
 # 函数功能，传入当前url 跳转回当前url的前一个url
 def redirect_back(backurl, **kwargs):
@@ -62,3 +64,9 @@ def parser_class_id(class_id):
     grd = grade_list[class_id // class_of_grade]
     cls = class_id % class_of_grade
     return grd, cls
+
+
+def get_time_list():
+    time_list = db.session.query(Subject.time).all()
+    time_list = [time[0] for time in set(time_list)]
+    return time_list

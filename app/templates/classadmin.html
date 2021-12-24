@@ -24,18 +24,19 @@
     <div class="tab-pane active container" id="home">
         {{render_form(form)}}
         <hr>
-        <a href="#">下载空报名表</a>
+        <a href="/admin/download_class_table">下载空报名表</a>
     </div>
 
     <div class="tab-pane container" id="menu1">
         报名信息
     </div>
     <div class="tab-pane container" id="menu2">
-       {{csrf_token}}
+        <form class="form" role="form" action="/admin/add_student">
+        {{form1.csrf_token}}
          {{render_form_row([form1.name, form1.contact1, form1.contact2])}}
         {{render_form_row([form1.sub1,form1.sub2, form1.sub3, form1.sub4])}}
         {{render_form_row([form1.add_submit])}}
-
+        </form>
     </div>
     <div class="tab-pane container" id="menu3">
         已取消项目处理</div>

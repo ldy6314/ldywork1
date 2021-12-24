@@ -1,12 +1,32 @@
-from flask import Blueprint, url_for, redirect, session, request
+from flask import Blueprint, url_for, redirect, session, request, current_app
 from forms import LoginForm, AddForm
 from flask import flash, render_template
-from models import User, Subject
+from models import User, Subject, Class
 from extensions import db, login_manager
 from flask_login import login_user, logout_user
-from utils import is_safe_url
+from utils import is_safe_url, to_class_id
 
 app_bp = Blueprint('rootbp', __name__)
+
+
+@app_bp.before_app_first_request
+def add_class_id():
+    print('add_class_id')
+    grade_list = current_app.config['GRADE_LIST']
+    class_number = current_app.config['CLASS_NUMBER']
+    res = Class.query.all()
+    if not res:
+        for i in range(len(grade_list)):
+            for j in range(class_number[i]):
+                class_name = grade_list[i] + str(j+1)
+                class_id = to_class_id(class_name)
+                class_ = Class(id=class_id)
+                db.session.add(class_)
+
+        db.session.commit()
+
+
+
 
 
 @login_manager.user_loader

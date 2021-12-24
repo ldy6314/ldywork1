@@ -19,6 +19,9 @@
   <li class="nav-item">
     <a class="nav-link" data-toggle="tab" href="#menu4">课程添加</a>
   </li>
+  <li class="nav-item">
+    <a class="nav-link" data-toggle="tab" href="#menu5">账号管理</a>
+  </li>
 
 </ul>
 <!-- Tab panes -->
@@ -79,29 +82,6 @@
                </tr>
 
            {% endfor %}
-        <div class="modal fade" id="myModal">
-  <div class="modal-dialog">
-    <div class="modal-content">
-
-      <!-- 模态框头部 -->
-      <div class="modal-header">
-        <h4 class="modal-title">修改课程</h4>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-      </div>
-
-      <!-- 模态框主体 -->
-      <div class="modal-body">
-
-      </div>
-
-      <!-- 模态框底部 -->
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
-      </div>
-
-    </div>
-  </div>
-</div>
         </tbody>
       </table>
   </div>
@@ -126,7 +106,11 @@
        </div>
       </div>
     </div>
+  <div class="tab-pane container" id="menu5">
+    <a href="/add">添加账户</a>
+  </div>
 </div>
+
 {%endblock%}
 
 {%block script%}
