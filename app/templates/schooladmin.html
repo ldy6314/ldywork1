@@ -30,7 +30,7 @@
   <div class="tab-pane  container" id="menu1">
     <form method="post" action="/admin/upload_subjects" enctype="multipart/form-data">
       {{form.csrf_token}}
-      {{render_field(form.file, accept=".xls, .xlsx")}}
+      {{render_field(form.file, accept=".xlsx")}}
       {{form.submit}}
     </form>
   </div>
