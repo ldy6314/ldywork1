@@ -10,8 +10,8 @@ class_list = [str(i + 1) + '班' for i in range(10)]
 
 
 class LoginForm(FlaskForm):
-    username = StringField('用户名', validators=[DataRequired(), Length(8)])
-    password = PasswordField('密码', validators=[DataRequired(), Length(8)])
+    username = StringField('用户名', validators=[DataRequired(), Length(3)])
+    password = PasswordField('密码', validators=[DataRequired(), Length(3)])
     remember_me = BooleanField('记住我')
     submit = SubmitField('登录')
 
@@ -81,3 +81,8 @@ class EditSubjectForm(AddSubjectForm):
     name = HiddenField()
     canceled = BooleanField('取消')
     submit = SubmitField('修改', render_kw={'class': "btn-block"})
+
+
+class UploadUserForm(FlaskForm):
+    file = FileField('请上传账户添加表', validators=[FileRequired(), FileAllowed(['xls', 'xlsx'])])
+    submit = SubmitField('上传', render_kw={"id": "submit"})

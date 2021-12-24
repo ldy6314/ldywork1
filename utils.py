@@ -37,7 +37,7 @@ def get_subjects(filename):
     maxc = ws.max_column
 
     subjects = []
-    for row in ws.iter_rows(min_row=2, max_row=maxr, max_col=maxc-1):
+    for row in ws.iter_rows(min_row=2, max_row=maxr, max_col=maxc):
         subject = []
         for cell in row:
             subject.append(cell.value)
@@ -70,3 +70,32 @@ def get_time_list():
     time_list = db.session.query(Subject.time).all()
     time_list = [time[0] for time in set(time_list)]
     return time_list
+
+
+def get_students_information(filename):
+    print(filename)
+    wb = load_workbook(filename)
+    ws = wb.active
+    grd = ws['B1'].value
+    cls = ws['D1'].value
+    infos = []
+    for row in ws.iter_rows(min_row=3, max_row=50, max_col=7):
+        info = []
+        for cell in row:
+            info.append(cell.value)
+        if info[0]:
+            infos.append(info)
+    return grd, cls, infos
+
+
+def get_users_information(filename):
+    wb = load_workbook(filename)
+    ws = wb.active
+    infos = []
+    for row in ws.iter_rows(min_row=2, max_row=50, max_col=5):
+        info = []
+        for cell in row:
+            info.append(cell.value)
+        if info[0]:
+            infos.append(info)
+    return infos

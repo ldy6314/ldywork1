@@ -30,7 +30,7 @@
   <div class="tab-pane  container" id="menu1">
     <form method="post" action="/admin/upload_subjects" enctype="multipart/form-data">
       {{form.csrf_token}}
-      {{render_field(form.file, accept=".xls, .xlsx")}}
+      {{render_field(form.file, accept=".xlsx")}}
       {{form.submit}}
     </form>
   </div>
@@ -107,7 +107,9 @@
       </div>
     </div>
   <div class="tab-pane container" id="menu5">
-    <a href="/add">添加账户</a>
+
+    <div><a href="/add">添加账户</a></div>
+    <div><a href="/admin/upload_user_table">批量上传账户</a></div>
   </div>
 </div>
 

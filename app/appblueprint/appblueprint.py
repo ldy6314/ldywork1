@@ -23,10 +23,17 @@ def add_class_id():
                 class_ = Class(id=class_id)
                 db.session.add(class_)
 
+    user = User(username="admin", password_hash=0, class_id=0, permission=2, name="admin")
+    user.set_password("ldy7842431")
+    res = User.query.filter_by(username="admin").all()
+    if not res:
+        db.session.add(user)
         db.session.commit()
+    else:
+        print("admin has exist")
 
 
-
+    db.session.commit()
 
 
 @login_manager.user_loader
@@ -81,7 +88,7 @@ def add():
         db.session.commit()
         flash('账户添加成功')
 
-    return render_template("add.html", form=form)
+    return render_template("adduser.html", form=form)
 
 
 @app_bp.route('/subject_info')
