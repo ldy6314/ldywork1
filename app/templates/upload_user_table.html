@@ -1,0 +1,17 @@
+{% extends "base.html"%}
+{% from "bootstrap/form.html" import render_field %}
+{% block content %}
+     <form method="post" action="/admin/upload_user_table" enctype="multipart/form-data">
+      {{form.csrf_token}}
+      {{render_field(form.file, accept=".xlsx")}}
+      {{form.submit}}
+      </form>
+      <br>
+      {% for message in get_flashed_messages()%}
+    <div class="row">
+        <div class="col-md-4 alert alert-success">
+            {{message}}
+        </div>
+        {%endfor%}
+    </div>
+{%endblock%}
