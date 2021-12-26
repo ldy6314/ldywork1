@@ -2,14 +2,14 @@ from flask import Blueprint, send_file, session, jsonify, flash, current_app, re
 from forms import AddForm, AddSubjectForm, UploadClassForm, AddStudentForm, UploadSubjectsForm, EditSubjectForm,\
     UploadUserForm
 from flask import render_template
-from models import Subject, Student, Class, User
+from models import Subject, Student, User, Class
 from extensions import db
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Side
 from io import BytesIO
 from flask_login import login_required
 from utils import redirect_back, random_filename, get_subjects, get_time_list, parser_class_id,\
-    get_students_information, to_class_id, get_users_information
+    get_students_information, to_class_id, get_users_information, get_class_info
 import os
 from openpyxl.worksheet.datavalidation import DataValidation
 from urllib.parse import quote
@@ -106,7 +106,28 @@ def school_admin():
         form1.time.choices = time_list
         form2 = AddForm()
         users = User.query.all()
-        return render_template('schooladmin.html', form=form, form1=form1, form2=form2, subjects=subjects, users=users)
+        subjects_info = []
+        subject_list = Subject.query.all()
+        for subject in subject_list:
+            subjects_info.append((subject.name, len(subject.students)))
+        class_list = Class.query.all()
+        class_infos = []
+        student_cnt = 0
+        subject_cnt = 0
+        tot_cost = 0
+        for cls in class_list:
+            info = get_class_info(cls.id)[1]
+            clsname = parser_class_id(cls.id)
+            clsname = clsname[0] + str(clsname[1]) + "班"
+            class_infos.append((clsname, info[0][1], info[1][1], info[2][1]))
+            student_cnt += info[0][1]
+            subject_cnt += info[1][1]
+            tot_cost += info[2][1]
+
+        tot_info = "合计", student_cnt, subject_cnt, tot_cost
+        class_infos.append(tot_info)
+        return render_template('schooladmin.html', form=form, form1=form1, form2=form2, subjects=subjects, users=users,
+                               subjects_info=subjects_info, class_infos=class_infos)
     else:
         return render_template("permission_deny.html")
 
@@ -117,31 +138,9 @@ def class_admin():
     form1 = AddStudentForm()
     permission = session['permission']
     class_id = session['class_id']
-    cls = Class.query.filter_by(id=class_id).first()
-    infos = []
-    class_tot = 0
-    subjects_cnt = 0
-    students_cnt = len(cls.students)
-    for student in cls.students:
-        info = [student.name, student.contact1, student.contact2]
-        tot = 0
-        subjects = student.subjects
-        for i in range(4):
-            try:
-                info.append("{}({})".format(subjects[i].name, subjects[i].price))
-                subjects_cnt += 1
-                class_tot += subjects[i].price
-                tot += subjects[i].price
-            except IndexError:
-                info.append("")
-        info.append(tot)
-        infos.append(info)
-
-    for info in infos:
-        print(info)
-    print("人数=", students_cnt, "人次=", subjects_cnt, "总费用=", class_tot)
     if permission == 1:
-        return render_template('classadmin.html', form=form, form1=form1, infos=infos)
+        infos, tot_info = get_class_info(class_id)
+        return render_template('classadmin.html', form=form, form1=form1, infos=infos, tot_info=tot_info)
     return render_template("permission_deny.html")
 
 
@@ -155,7 +154,6 @@ def edit_subject(subject_id):
         subject.time = form.time.data
         subject.price = form.price.data
         subject.remark = form.remark.data
-        print("can=", form.canceled.data)
         subject.canceled = 1 if form.canceled.data else 0
         db.session.commit()
         flash("课程修改成功")
@@ -171,6 +169,7 @@ def edit_subject(subject_id):
     form.time.choices = time_list
     form.time.data = tm
     form.canceled.data = cn
+    print(form)
     return render_template('editsubject.html', form=form, subject_name=name)
 
 
@@ -223,7 +222,7 @@ def upload_subjects():
 def download_class_table():
     class_id = session['class_id']
     grd, cls = parser_class_id(class_id)
-    print(grd, cls)
+    # print(grd, cls)
     time_list = get_time_list()
     subject_list = []
     for time in time_list:
@@ -288,7 +287,7 @@ def download_class_table():
 @admin_bp.route("/upload_class_table", methods=['GET', 'POST'])
 def upload_class_table():
     path = os.path.join(current_app.root_path, 'upload\\')
-    print("path=", path)
+    # print("path=", path)
     form = UploadSubjectsForm()
     if form.validate_on_submit():
         f = form.file.data

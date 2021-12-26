@@ -4,7 +4,7 @@ from uuid import uuid4
 import os
 from openpyxl import load_workbook
 from extensions import db
-from models import Subject
+from models import Subject, Class
 
 # 函数功能，传入当前url 跳转回当前url的前一个url
 def redirect_back(backurl, **kwargs):
@@ -99,3 +99,28 @@ def get_users_information(filename):
         if info[0]:
             infos.append(info)
     return infos
+
+
+def get_class_info(class_id):
+    cls = Class.query.filter_by(id=class_id).first()
+    infos = []
+    class_tot = 0
+    subjects_cnt = 0
+    students_cnt = len(cls.students)
+    for student in cls.students:
+        info = [student.name, student.contact1, student.contact2]
+        tot = 0
+        subjects = student.subjects
+        for i in range(4):
+            try:
+                info.append("{}({})".format(subjects[i].name, subjects[i].price))
+                subjects_cnt += 1
+                class_tot += subjects[i].price
+                tot += subjects[i].price
+            except IndexError:
+                info.append("")
+        info.append(tot)
+        infos.append(info)
+
+    tot_info = ("报名人数", students_cnt), ("报名人次", subjects_cnt), ("班级总费用", class_tot)
+    return infos, tot_info
