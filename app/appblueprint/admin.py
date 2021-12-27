@@ -239,9 +239,11 @@ def upload_subjects():
             return redirect_back('/')
         infos = []
         for i in subjects:
+            if not i[0]:
+                break
             res = Subject.query.filter_by(name=i[0]).first()
             if not res:
-                subject = Subject(name=i[0], time=i[1], price=i[2], canceled=0, remark="")
+                subject = Subject(name=i[0], time=i[1], price=i[2].strip('元'), canceled=0, remark="")
                 infos.append(subject)
             else:
                 flash('{}已经存在！'.format(i[0]))

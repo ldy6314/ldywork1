@@ -37,7 +37,7 @@ def get_subjects(filename):
     maxc = ws.max_column
 
     subjects = []
-    for row in ws.iter_rows(min_row=2, max_row=maxr, max_col=maxc):
+    for row in ws.iter_rows(min_row=2, max_row=maxr, max_col=4):
         subject = []
         for cell in row:
             subject.append(cell.value)

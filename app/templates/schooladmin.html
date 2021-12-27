@@ -96,7 +96,7 @@
        <tbody>
           {% for info in class_infos%}
           <tr>
-            {% for item in info %}
+            {% for item in info[1:] %}
             <td>{{item}}</td>
             {% endfor%}
           </tr>

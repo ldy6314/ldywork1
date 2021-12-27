@@ -12,6 +12,7 @@ pymysql = "*"
 python-dotenv = "*"
 flask-migrate = "*"
 openpyxl = "*"
+tornado = "*"
 
 [dev-packages]
 watchdog = "*"
