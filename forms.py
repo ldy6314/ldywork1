@@ -70,11 +70,11 @@ class AddStudentForm(FlaskForm):
     name = StringField('姓名', validators=[DataRequired()])
     contact1 = StringField('联系电话1', validators=[DataRequired()])
     contact2 = StringField('联系电话2')
-    sub1 = SelectField('项目一', choices=["", 1, 2, 3, 4, 5, 6, 7])
-    sub2 = SelectField('项目二', choices=["", 1, 2, 3, 4, 5, 6, 7])
-    sub3 = SelectField('项目三', choices=["", 1, 2, 3, 4, 5, 6, 7])
-    sub4 = SelectField('项目四', choices=["", 1, 2, 3, 4, 5, 6, 7])
-    add_submit = SubmitField('添加')
+    sub1 = SelectField()
+    sub2 = SelectField()
+    sub3 = SelectField()
+    sub4 = SelectField()
+    submit = SubmitField('添加')
 
 
 class EditSubjectForm(AddSubjectForm):
@@ -86,3 +86,7 @@ class EditSubjectForm(AddSubjectForm):
 class UploadUserForm(FlaskForm):
     file = FileField('请上传账户添加表', validators=[FileRequired(), FileAllowed(['xls', 'xlsx'])])
     submit = SubmitField('上传', render_kw={"id": "submit"})
+
+
+class EditStudentForm(AddStudentForm):
+    name = HiddenField()

@@ -35,7 +35,7 @@
     </div>
 
     <div class="tab-pane container" id="menu1">
-        <table class="table table-striped table-bordered">
+        <table class="table table-striped table-bordered table-sm">
             <thead>
             <th>姓名</th>
             <th>联系人1</th>
@@ -45,13 +45,15 @@
             <th>项目3</th>
             <th>项目4</th>
             <th>合计</th>
+             <th>操作</th>
             </thead>
             <tbody>
             {% for info in infos%}
             <tr>
-                {% for data in info %}
-                <td>{{data}}</td>
+                {% for data in info[1:] %}
+                <td><small>{{data}}</small></td>
                 {% endfor %}
+                 <td><a class="btn btn-sm btn-primary" href="/admin/edit_student/{{info[0]}}"><small>编辑</small></a></td>
             </tr>
             {% endfor %}
             {% for info in tot_info %}
@@ -62,16 +64,9 @@
             {% endfor %}
             </tbody>
         </table>
-
-
     </div>
     <div class="tab-pane container" id="menu2">
-        <form class="form" role="form" action="/admin/add_student">
-        {{form1.csrf_token}}
-         {{render_form_row([form1.name, form1.contact1, form1.contact2])}}
-        {{render_form_row([form1.sub1,form1.sub2, form1.sub3, form1.sub4])}}
-        {{render_form_row([form1.add_submit])}}
-        </form>
+        <a href="/admin/add_student">添加学生</a>
     </div>
     <div class="tab-pane container" id="menu3">
         已取消项目处理</div>

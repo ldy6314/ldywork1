@@ -1,0 +1,16 @@
+{% extends "base.html"%}
+{% from "bootstrap/form.html" import render_form %}
+{% block content %}
+<div class="row">
+        <div class="col-md-6 offset-3">
+            {% for message in get_flashed_messages()%}
+        <p class="alert alert-danger">{{message}}</p>
+        {%endfor%}
+        </div>
+    </div>
+    <div class="row">
+        <div  class="col-md-6 offset-3">
+            {{render_form(form1)}}
+        </div>
+    </div>
+{% endblock%}

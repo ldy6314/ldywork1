@@ -10,7 +10,8 @@ app_bp = Blueprint('rootbp', __name__)
 
 
 @app_bp.before_app_first_request
-def add_class_id():
+def init_server():
+    db.create_all()
     print('add_class_id')
     grade_list = current_app.config['GRADE_LIST']
     class_number = current_app.config['CLASS_NUMBER']

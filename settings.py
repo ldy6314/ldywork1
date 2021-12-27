@@ -13,7 +13,7 @@ class BaseConfig:
         os.getenv("PORT")
     )
     GRADE_LIST = "一二三四五六"
-    CLASS_NUMBER = [5, 8, 7, 6, 5, 4]
+    CLASS_NUMBER = [8, 7, 6, 5, 4, 4]
     CLASS_OF_GRADE = 10
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

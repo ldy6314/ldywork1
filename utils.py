@@ -108,7 +108,7 @@ def get_class_info(class_id):
     subjects_cnt = 0
     students_cnt = len(cls.students)
     for student in cls.students:
-        info = [student.name, student.contact1, student.contact2]
+        info = [student.id, student.name, student.contact1, student.contact2]
         tot = 0
         subjects = student.subjects
         for i in range(4):

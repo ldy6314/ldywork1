@@ -1,6 +1,6 @@
 from flask import Blueprint, send_file, session, jsonify, flash, current_app, redirect, url_for
 from forms import AddForm, AddSubjectForm, UploadClassForm, AddStudentForm, UploadSubjectsForm, EditSubjectForm,\
-    UploadUserForm
+    UploadUserForm, EditStudentForm
 from flask import render_template
 from models import Subject, Student, User, Class
 from extensions import db
@@ -38,9 +38,51 @@ def add():
     return render_template('adduser.html', form=form)
 
 
-@admin_bp.route('/add_student')
+@admin_bp.route('/add_student', methods=['GET', 'POST'])
 def add_student():
-    return "added"
+    form1 = AddStudentForm()
+    time_list = get_time_list()
+    sublist = [form1.sub1, form1.sub2, form1.sub3, form1.sub4]
+    for item in zip(sublist, time_list):
+        item[0].label.text = item[1] + "课程"
+        item[0].choices = [subject.name for subject in Subject.query.filter_by(time=item[1]).all()]
+        item[0].choices.insert(0, "不选")
+    form1 = AddStudentForm()
+    time_list = get_time_list()
+    sublist = [form1.sub1, form1.sub2, form1.sub3, form1.sub4]
+    for item in zip(sublist, time_list):
+        item[0].label.text = item[1] + "课程"
+        item[0].choices = [subject.name for subject in Subject.query.filter_by(time=item[1]).all()]
+        item[0].choices.insert(0, "不选")
+
+    if form1.validate_on_submit():
+        class_id = session['class_id']
+        data = form1.data
+        name = data['name']
+        con1 = data['contact1']
+        con2 = data['contact2']
+        subs = [data['sub1'], data['sub2'], data['sub3'], data['sub4']]
+        res = Student.query.filter_by(name=name, class_id=class_id).all()
+        if not res:
+            student = Student(name=name, class_id=class_id, contact1=con1, contact2=con2)
+            
+            for sub in subs:
+                if sub != "不选":
+                    sub = Subject.query.filter_by(name=sub).first()
+                    if sub:
+                        student.subjects.append(sub)
+             
+            if len(student.subjects):       
+                db.session.add(student)
+                db.session.commit()
+                flash('添加成功')
+            else:
+                flash('至少选择一项科目')
+        
+        else:
+            flash('该学生已经存在')
+
+    return render_template("addstudent.html", form1=form1)
 
 
 @admin_bp.route('/add_subject', methods=['GET', 'POST'])
@@ -135,18 +177,17 @@ def school_admin():
 @admin_bp.route('/class_admin')
 def class_admin():
     form = UploadClassForm()
-    form1 = AddStudentForm()
     permission = session['permission']
     class_id = session['class_id']
     if permission == 1:
         infos, tot_info = get_class_info(class_id)
-        return render_template('classadmin.html', form=form, form1=form1, infos=infos, tot_info=tot_info)
+        return render_template('classadmin.html', form=form, infos=infos, tot_info=tot_info)
     return render_template("permission_deny.html")
 
 
 @admin_bp.route('/edit_subject/<int:subject_id>', methods=['GET', 'POST'])
 def edit_subject(subject_id):
-    time_list = get_time_list
+    time_list = get_time_list()
     form = EditSubjectForm()
     form.time.choices = time_list
     subject = Subject.query.get(subject_id)
@@ -169,7 +210,6 @@ def edit_subject(subject_id):
     form.time.choices = time_list
     form.time.data = tm
     form.canceled.data = cn
-    print(form)
     return render_template('editsubject.html', form=form, subject_name=name)
 
 
@@ -363,3 +403,47 @@ def upload_users_table():
 
     else:
         return render_template("upload_user_table.html", form=form)
+
+
+@admin_bp.route('/edit_student/<int:student_id>', methods=['GET', 'POST'])
+def edit_student(student_id):
+    form1 = EditStudentForm()
+    form1.submit.label.text = "修改"
+    time_list = get_time_list()
+    sublist = [form1.sub1, form1.sub2, form1.sub3, form1.sub4]
+    for item in zip(sublist, time_list):
+        item[0].label.text = item[1] + "课程"
+        item[0].choices = [subject.name for subject in Subject.query.filter_by(time=item[1]).all()]
+        item[0].choices.insert(0, "不选")
+    student = Student.query.filter_by(id=student_id).first()
+    if form1.validate_on_submit():
+        data = form1.data
+        con1 = data['contact1']
+        con2 = data['contact2']
+        subs = [data['sub1'], data['sub2'], data['sub3'], data['sub4']]
+        num_of_subs = 4 - subs.count('不选')
+        if not num_of_subs:
+            db.session.delete(student)
+            db.session.commit()
+            flash('因修改该学生没有任何科目，删除该学生')
+        else:
+            student.contact1 = con1
+            student.contact2 = con2
+            student.subjects.clear()
+            for sub in subs:
+                if sub != "不选":
+                    sub = Subject.query.filter_by(name=sub).first()
+                    if sub:
+                        student.subjects.append(sub)
+            db.session.commit()
+            flash('修改成功')
+
+    name = student.name
+    form1.contact1.data = student.contact1
+    form1.contact2.data = student.contact2
+    subjects = student.subjects
+    for subject in subjects:
+        idx = time_list.index(subject.time)
+        sublist[idx].data = subject.name
+
+    return render_template("editstudent.html", form=form1, name=name)
