@@ -32,8 +32,6 @@ def init_server():
         db.session.commit()
     else:
         print("admin has exist")
-
-
     db.session.commit()
 
 

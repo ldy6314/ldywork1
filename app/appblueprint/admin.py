@@ -340,7 +340,7 @@ def upload_class_table():
             class_id = to_class_id(grd+str(cls))
             if class_id != session['class_id']:
                 flash('班级填写不正确,请修改')
-                return redirect_back('/')
+                return redirect_back('rootbp.index')
 
             for i in infos:
                 res = Student.query.filter_by(class_id=class_id, name=i[0]).all()
@@ -353,7 +353,7 @@ def upload_class_table():
                             sub = Subject.query.filter_by(name=sub).first()
                             if not sub:
                                 flash('表格填写有错误')
-                                return redirect_back('/')
+                                return redirect_back('admin.class_admin')
                             student.subjects.append(sub)
                 else:
                     flash("学生 {} 已经存在".format(i[0]))
@@ -362,11 +362,11 @@ def upload_class_table():
         except Exception as e:
             print(e)
             flash('上传的表格不正确')
-            return redirect_back('/')
+            return redirect_back('admin.class_admin')
 
     else:
         flash('上传失败')
-    return redirect_back('/')
+    return redirect_back('admin.class_admin')
 
 
 @admin_bp.route('/upload_user_table', methods=['GET', 'POST'])

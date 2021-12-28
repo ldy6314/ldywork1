@@ -5,8 +5,9 @@ from app import create_app
 
 
 def main():
-    http_sever = HTTPServer(WSGIContainer(create_app('development')))
-    http_sever.listen(5000)
+    http_sever = HTTPServer(WSGIContainer(create_app('production')))
+    http_sever.listen(5050)
+    print("start serving")
     IOLoop.current().start()
 
 

@@ -6,6 +6,7 @@ from openpyxl import load_workbook
 from extensions import db
 from models import Subject, Class
 
+
 # 函数功能，传入当前url 跳转回当前url的前一个url
 def redirect_back(backurl, **kwargs):
     for target in request.args.get('next'), request.referrer:
@@ -102,6 +103,7 @@ def get_users_information(filename):
 
 
 def get_class_info(class_id):
+    print(class_id)
     cls = Class.query.filter_by(id=class_id).first()
     infos = []
     class_tot = 0
