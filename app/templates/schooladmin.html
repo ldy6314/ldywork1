@@ -94,13 +94,20 @@
         <th>收费合计</th>
        </thead>
        <tbody>
-          {% for info in class_infos%}
+          {% for info in class_infos[:-1]%}
           <tr>
-            {% for item in info%}
+            <td><a href="/admin/class_info/{{to_class_id(info[0])}}">{{info[0]}}</a></td>
+            {% for item in info[1:]%}
             <td>{{item}}</td>
             {% endfor%}
           </tr>
           {% endfor%}
+          <tr>
+            <td><a href="#">{{class_infos[-1][0]}}</a></td>
+            <td>{{class_infos[-1][1]}}</td>
+            <td>{{class_infos[-1][2]}}</td>
+            <td>{{class_infos[-1][3]}}</td>
+          </tr>
        </tbody>
      </table>
   </div>

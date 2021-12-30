@@ -156,7 +156,7 @@ def school_admin():
         for cls in class_list:
             info = get_class_info(cls.id)[1]
             clsname = parser_class_id(cls.id)
-            clsname = clsname[0] + str(clsname[1]) + "班"
+            clsname = clsname[0] + str(clsname[1])
             class_infos.append((clsname, info[0][1], info[1][1], info[2][1]))
             student_cnt += info[0][1]
             subject_cnt += info[1][1]
@@ -165,7 +165,7 @@ def school_admin():
         tot_info = "合计", student_cnt, subject_cnt, tot_cost
         class_infos.append(tot_info)
         return render_template('schooladmin.html', form=form, form1=form1, form2=form2, subjects=subjects, users=users,
-                               subjects_info=subjects_info, class_infos=class_infos)
+                               subjects_info=subjects_info, class_infos=class_infos, to_class_id=to_class_id)
     else:
         return render_template("permission_deny.html")
 
@@ -445,3 +445,8 @@ def edit_student(student_id):
         sublist[idx].data = subject.name
 
     return render_template("editstudent.html", form=form1, name=name)
+
+
+@admin_bp.route('/class_info/<int:class_id>')
+def show_class_info(class_id):
+    return str(class_id)
