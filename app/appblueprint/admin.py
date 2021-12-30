@@ -1,5 +1,5 @@
 from flask import Blueprint, send_file, session, jsonify, flash, current_app, redirect, url_for
-from forms import AddForm, AddSubjectForm, UploadClassForm, AddStudentForm, UploadSubjectsForm, EditSubjectForm,\
+from forms import AddForm, AddSubjectForm, UploadClassForm, AddStudentForm, UploadSubjectsForm, EditSubjectForm, \
     UploadUserForm, EditStudentForm
 from flask import render_template
 from models import Subject, Student, User, Class
@@ -9,8 +9,8 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Side
 from io import BytesIO
 from flask_login import login_required
-from utils import redirect_back, random_filename, get_subjects, get_time_list, parser_class_id,\
-    get_students_information, to_class_id, get_users_information, get_class_info
+from utils import redirect_back, random_filename, get_subjects, get_time_list, parser_class_id, \
+    get_students_information, to_class_id, get_users_information, get_class_info, download_excel
 import os
 from openpyxl.worksheet.datavalidation import DataValidation
 from urllib.parse import quote
@@ -66,20 +66,20 @@ def add_student():
         res = Student.query.filter_by(name=name, class_id=class_id).all()
         if not res:
             student = Student(name=name, class_id=class_id, contact1=con1, contact2=con2)
-            
+
             for sub in subs:
                 if sub != "不选":
                     sub = Subject.query.filter_by(name=sub).first()
                     if sub:
                         student.subjects.append(sub)
-             
-            if len(student.subjects):       
+
+            if len(student.subjects):
                 db.session.add(student)
                 db.session.commit()
                 flash('添加成功')
             else:
                 flash('至少选择一项科目')
-        
+
         else:
             flash('该学生已经存在')
 
@@ -105,43 +105,31 @@ def add_subject():
 
 @admin_bp.route('/download_subjects')
 def download_subjects():
-    wb = Workbook()
-    ws = wb.worksheets[0]
-    # 表头部分
-    # 标题
-    ws.append(["项目开设表", "", "", "", ""])
-    # 每列的值
-    ws.append(["编号", "名称", "时间", "价格", "备注"])
-    # 数据部分
+    # def download_excel(filename, sheet_names, **kwargs):
+    #     """
+    #       col_name
+    #       data_list
+    #       head_merge_range
+    #       border_range
+    #       cols_width_info
+    #     """
+    filename = "课程信息表.xlsx"
+    sheet_names = ["课程信息表"]
+    col_name = ["编号", "名称", "时间", "价格", "备注"]
+    head_merge_range = "A1:E1"
+    col_width_infos = {"B": 30, "C": 30, "E": 30}
+    data_list = [[]]
     res = Subject.query.all()
-    for i in enumerate(res, 1):
-        # print(i[0], i[1].name, i[1].time, i[1].price, i[1].remark)
-        ws.append([i[0], i[1].name, i[1].time, i[1].price, i[1].remark])
-
-    # 格式部分
-    ws.merge_cells("A1:E1")
-    border = Border(
-        left=Side(style='medium', color='FF000000'),
-        right=Side(style='medium', color='FF000000'),
-        bottom=Side(style='medium', color='FF000000'),
-        top=Side(style='medium', color='FF000000')
-    )
-    align_center = Alignment(horizontal='center', vertical='center')
-    # 格式修饰区域1
-    ws_area = ws["A1:E22"]
-    for row in ws_area:
-        for cell in row:
-            cell.alignment = align_center
-            cell.border = border
-    for i in "BCE":
-        ws.column_dimensions[i].width = 30
-
-    virtual_book = BytesIO()
-    wb.save(virtual_book)
-    virtual_book.seek(0)
-    rv = send_file(virtual_book, as_attachment=True, attachment_filename="test.xlsx")
-    rv.headers['Content-Disposition'] += ";filename*=utf-8' 'test.xlsx"
-    return rv
+    for idx, subject in enumerate(res, 1):
+        info = [idx, subject.name, subject.time, subject.price, subject.remark]
+        data_list[0].append(info)
+    border_range = "A{}:E{}".format(1, len(res)+2)
+    return download_excel(filename, sheet_names,
+                          col_name=col_name,
+                          data_list=data_list,
+                          head_merge_range=head_merge_range,
+                          border_range=border_range,
+                          col_width_infos=col_width_infos)
 
 
 @admin_bp.route('/school_admin', methods=['GET', 'POST'])
@@ -238,9 +226,9 @@ def upload_subjects():
     if form.validate_on_submit():
         f = form.file.data
         filename = random_filename(f.filename)
-        f.save(path+filename)
+        f.save(path + filename)
         try:
-            subjects = get_subjects(path+filename)
+            subjects = get_subjects(path + filename)
         except Exception as e:
             print(e)
             flash('上传的表格不正确')
@@ -251,7 +239,7 @@ def upload_subjects():
                 break
             res = Subject.query.filter_by(name=i[0]).first()
             if not res:
-                subject = Subject(name=i[0], time=i[1], price=i[2].strip('元'), canceled=0, remark="")
+                subject = Subject(name=i[0], time=i[1], price=str(i[2]).strip('元'), canceled=0, remark="")
                 infos.append(subject)
             else:
                 flash('{}已经存在！'.format(i[0]))
@@ -283,7 +271,7 @@ def download_class_table():
     ws = wb.worksheets[0]
     ws.append(["年级", "", "班级", ""])
     col_name = ["姓名", "联系电话1", "联系电话2"]
-    tm_lst = [tm+'项目' for tm in time_list]
+    tm_lst = [tm + '项目' for tm in time_list]
     col_name.extend(tm_lst)
     ws.append(col_name)
     dv = DataValidation(type="list", formula1='"一,二,三,四,五,六"', allow_blank=True)
@@ -344,8 +332,8 @@ def upload_class_table():
         filename = f.filename
         f.save(path + filename)
         try:
-            grd, cls, infos = get_students_information(path+filename)
-            class_id = to_class_id(grd+str(cls))
+            grd, cls, infos = get_students_information(path + filename)
+            class_id = to_class_id(grd + str(cls))
             if class_id != current_user.class_id:
                 flash('班级填写不正确,请修改')
                 return redirect_back('rootbp.index')
@@ -354,7 +342,7 @@ def upload_class_table():
                 res = Student.query.filter_by(class_id=class_id, name=i[0]).all()
                 if not res:
                     student = Student(class_id=class_id, name=i[0], contact1=i[1] if i[1] else "", contact2=i[2] if i[2]
-                                      else "")
+                    else "")
 
                     for sub in i[-4:]:
                         if sub:
@@ -392,7 +380,7 @@ def upload_users_table():
                 res = User.query.filter_by(username=i[0]).all()
                 if not res:
                     name = "{}{}班主任".format(i[2], i[3])
-                    class_id = to_class_id(i[2]+str(i[3]))
+                    class_id = to_class_id(i[2] + str(i[3]))
                     print(name, class_id)
                     user = User(username=i[0], class_id=class_id, name=name, permission=i[4])
                     user.set_password(i[0])
