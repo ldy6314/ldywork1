@@ -1,10 +1,14 @@
 from urllib.parse import urlparse, urljoin
-from flask import request, redirect, url_for, current_app
+from flask import request, redirect, url_for, current_app, send_file
 from uuid import uuid4
 import os
 from openpyxl import load_workbook
 from extensions import db
 from models import Subject, Class
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Border, Side
+from io import BytesIO
+from urllib.parse import quote
 
 
 # 函数功能，传入当前url 跳转回当前url的前一个url
@@ -126,3 +130,55 @@ def get_class_info(class_id):
 
     tot_info = ("报名人数", students_cnt), ("报名人次", subjects_cnt), ("班级总费用", class_tot)
     return infos, tot_info
+
+
+def download_subjects(title, **kwargs):
+    """
+      col_name
+      data_list
+      head_merge_range
+      border_range
+      cols_width_info
+    """
+    wb = Workbook()
+    ws = wb.worksheets[0]
+    # 表头部分
+    # 标题
+    ws.append([title])
+    # 每列的值
+    col_name = kwargs.get('col_name')
+    ws.append(col_name)
+    # 数据部分
+    data_list = kwargs.get('data_list')
+    for i in enumerate(data_list, 1):
+        # print(i[0], i[1].name, i[1].time, i[1].price, i[1].remark)
+        ws.append([i[0], i[1].name, i[1].time, i[1].price, i[1].remark])
+
+    # 格式部分
+    head_merge_range = kwargs.get('head_merge_range')
+    ws.merge_cells(head_merge_range)
+    border = Border(
+        left=Side(style='medium', color='FF000000'),
+        right=Side(style='medium', color='FF000000'),
+        bottom=Side(style='medium', color='FF000000'),
+        top=Side(style='medium', color='FF000000')
+    )
+    align_center = Alignment(horizontal='center', vertical='center')
+    # 格式修饰区域1
+    border_range = kwargs.get('border_range')
+    ws_area = ws[border_range]
+    for row in ws_area:
+        for cell in row:
+            cell.alignment = align_center
+            cell.border = border
+    col_width_infos = kwargs.get('col_width_info')
+    for col in col_width_infos:
+        if col.isalpha():
+            ws.column_dimensions[col].width = 30
+
+    virtual_book = BytesIO()
+    wb.save(virtual_book)
+    virtual_book.seek(0)
+    rv = send_file(virtual_book, as_attachment=True, attachment_filename="test.xlsx")
+    rv.headers['Content-Disposition'] += ";filename*=utf-8' '{}.xlsx".format(quote(title))
+    return rv

@@ -52,11 +52,7 @@ def login():
         username = form.username.data
         remember_me = form.remember_me.data
         user = User.query.filter_by(username=username).first()
-        class_id = user.class_id
-        permission = user.permission
         login_user(user, remember_me)
-        session["class_id"] = class_id
-        session["permission"] = permission
         arg_next = request.args.get('next',  '/')
         if is_safe_url(arg_next):
             return redirect(arg_next)

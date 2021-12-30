@@ -4,6 +4,7 @@ from forms import AddForm, AddSubjectForm, UploadClassForm, AddStudentForm, Uplo
 from flask import render_template
 from models import Subject, Student, User, Class
 from extensions import db
+from flask_login import current_user
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Side
 from io import BytesIO
@@ -56,7 +57,7 @@ def add_student():
         item[0].choices.insert(0, "不选")
 
     if form1.validate_on_submit():
-        class_id = session['class_id']
+        class_id = current_user.class_id
         data = form1.data
         name = data['name']
         con1 = data['contact1']
@@ -106,12 +107,18 @@ def add_subject():
 def download_subjects():
     wb = Workbook()
     ws = wb.worksheets[0]
+    # 表头部分
+    # 标题
     ws.append(["项目开设表", "", "", "", ""])
+    # 每列的值
     ws.append(["编号", "名称", "时间", "价格", "备注"])
+    # 数据部分
     res = Subject.query.all()
     for i in enumerate(res, 1):
         # print(i[0], i[1].name, i[1].time, i[1].price, i[1].remark)
         ws.append([i[0], i[1].name, i[1].time, i[1].price, i[1].remark])
+
+    # 格式部分
     ws.merge_cells("A1:E1")
     border = Border(
         left=Side(style='medium', color='FF000000'),
@@ -120,6 +127,7 @@ def download_subjects():
         top=Side(style='medium', color='FF000000')
     )
     align_center = Alignment(horizontal='center', vertical='center')
+    # 格式修饰区域1
     ws_area = ws["A1:E22"]
     for row in ws_area:
         for cell in row:
@@ -138,7 +146,7 @@ def download_subjects():
 
 @admin_bp.route('/school_admin', methods=['GET', 'POST'])
 def school_admin():
-    permission = session['permission']
+    permission = current_user.permission
     if permission == 2:
         form = UploadSubjectsForm()
         subjects = Subject.query.all()
@@ -177,8 +185,8 @@ def school_admin():
 @admin_bp.route('/class_admin')
 def class_admin():
     form = UploadClassForm()
-    permission = session['permission']
-    class_id = session['class_id']
+    permission = current_user.permission
+    class_id = current_user.class_id
     if permission == 1:
         infos, tot_info = get_class_info(class_id)
         return render_template('classadmin.html', form=form, infos=infos, tot_info=tot_info)
@@ -262,7 +270,7 @@ def upload_subjects():
 
 @admin_bp.route('/download_class_table')
 def download_class_table():
-    class_id = session['class_id']
+    class_id = current_user.id
     grd, cls = parser_class_id(class_id)
     # print(grd, cls)
     time_list = get_time_list()
@@ -338,7 +346,7 @@ def upload_class_table():
         try:
             grd, cls, infos = get_students_information(path+filename)
             class_id = to_class_id(grd+str(cls))
-            if class_id != session['class_id']:
+            if class_id != current_user.class_id:
                 flash('班级填写不正确,请修改')
                 return redirect_back('rootbp.index')
 
