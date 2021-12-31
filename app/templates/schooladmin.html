@@ -116,12 +116,14 @@
       <thead>
         <th>课程名称</th>
         <th>报名人数</th>
+
       </thead>
       <tbody>
         {% for info in subjects_info%}
         <tr>
-          <td>{{info[0]}}</td>
+          <td><a href="/admin/subject_info/{{info[2]}}">{{info[0]}}</a></td>
           <td>{{info[1]}}</td>
+
         </tr>
         {% endfor%}
       </tbody>

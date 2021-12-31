@@ -123,7 +123,7 @@ def download_subjects():
     for idx, subject in enumerate(res, 1):
         info = [idx, subject.name, subject.time, subject.price, subject.remark]
         data_list[0].append(info)
-    border_range = "A{}:E{}".format(1, len(res)+2)
+    border_range = "A{}:E{}".format(1, len(res) + 2)
     return download_excel(filename, sheet_names,
                           col_name=col_name,
                           data_list=data_list,
@@ -147,7 +147,7 @@ def school_admin():
         subjects_info = []
         subject_list = Subject.query.all()
         for subject in subject_list:
-            subjects_info.append((subject.name, len(subject.students)))
+            subjects_info.append((subject.name, len(subject.students), subject.id))
         class_list = Class.query.all()
         class_infos = []
         student_cnt = 0
@@ -449,4 +449,79 @@ def edit_student(student_id):
 
 @admin_bp.route('/class_info/<int:class_id>')
 def show_class_info(class_id):
-    return str(class_id)
+    infos, tot_info = get_class_info(class_id)
+    grd, cls = parser_class_id(class_id)
+    class_name = grd + str(cls)
+    return render_template('class_info.html', infos=infos, tot_info=tot_info, class_id=class_id,
+                           class_name=class_name)
+
+
+@admin_bp.route('/subject_info/<int:subject_id>')
+def show_subject_info(subject_id):
+    res = Subject.query.filter_by(id=subject_id).first()
+    students = res.students
+    subject_name = res.name
+    students.sort(key=lambda x: x.id)
+    infos = []
+    for idx, student in enumerate(students, 1):
+        grd, cls = parser_class_id(student.class_id)
+        print(idx, grd+str(cls), student.name)
+        infos.append((idx, grd+str(cls), student.name))
+    return render_template('subject_info.html', infos=infos, subject_id=subject_id, subject_name=subject_name)
+
+
+@admin_bp.route('/download_class_info/<int:class_id>')
+def download_class_info(class_id):
+    infos, tot_info = get_class_info(class_id)
+    grd, cls = parser_class_id(class_id)
+    class_name = grd + str(cls)
+    filename = "{}报名信息表.xlsx".format(class_name)
+    sheet_names = [filename.strip('.xlsx')]
+    col_name = ["姓名", "电话1", "电话2", "项目1", "项目2", "项目3", "项目4" "合计"]
+    head_merge_range = "A1:H1"
+    col_width_infos = {"B": 15, "C": 15, "D": 25, "E": 25, "F": 25, "G": 25}
+    data_list = [[]]
+    for student in infos:
+        info = [student[1], student[2], student[3]]
+        for i in range(4, 8):
+            info.append(student[i].replace('<br>', "\n"))
+        info.append(student[8])
+        data_list[0].append(info)
+    line = []
+    for info in tot_info:
+        line.extend(info)
+    data_list[0].append(line)
+    border_range = "A{}:H{}".format(1, len(infos) + 3)
+    return download_excel(filename, sheet_names,
+                          col_name=col_name,
+                          data_list=data_list,
+                          head_merge_range=head_merge_range,
+                          border_range=border_range,
+                          col_width_infos=col_width_infos)
+
+
+@admin_bp.route('/download_subject_table/<int:subject_id>')
+def download_subject_table(subject_id):
+    res = Subject.query.filter_by(id=subject_id).first()
+    subject_name = res.name
+    students = res.students
+    students.sort(key=lambda s: s.class_id)
+    filename = "{}俱乐部人员名单.xlsx".format(subject_name)
+    sheet_names = [filename.strip('.xlsx')]
+    col_name = ["编号", "班级", "姓名"]
+    head_merge_range = "A1:C1"
+    col_width_infos = {"B": 15, "C": 15}
+    data_list = [[]]
+    for idx, student in enumerate(students, 1):
+        grd, cls = parser_class_id(student.class_id)
+        info = [idx, grd+str(cls), student.name]
+        data_list[0].append(info)
+
+    border_range = "A{}:C{}".format(2, len(students) + 2)
+    return download_excel(filename, sheet_names,
+                          col_name=col_name,
+                          data_list=data_list,
+                          head_merge_range=head_merge_range,
+                          border_range=border_range,
+                          col_width_infos=col_width_infos)
+

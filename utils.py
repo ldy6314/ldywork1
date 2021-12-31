@@ -119,7 +119,7 @@ def get_class_info(class_id):
         subjects = student.subjects
         for i in range(4):
             try:
-                info.append("{}({})".format(subjects[i].name, subjects[i].price))
+                info.append("{}<br>{}<br>{}".format(subjects[i].name, subjects[i].price, subjects[i].time))
                 subjects_cnt += 1
                 class_tot += subjects[i].price
                 tot += subjects[i].price
