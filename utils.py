@@ -110,6 +110,7 @@ def get_class_info(class_id):
     print(class_id)
     cls = Class.query.filter_by(id=class_id).first()
     infos = []
+    canceled_infos = []
     class_tot = 0
     subjects_cnt = 0
     students_cnt = len(cls.students)
@@ -117,8 +118,11 @@ def get_class_info(class_id):
         info = [student.id, student.name, student.contact1, student.contact2]
         tot = 0
         subjects = student.subjects
+        canceled_list = []
         for i in range(4):
             try:
+                if subjects[i].canceled:
+                    canceled_list.append(subjects[i].name)
                 info.append("{}<br>{}<br>{}".format(subjects[i].name, subjects[i].price, subjects[i].time))
                 subjects_cnt += 1
                 class_tot += subjects[i].price
@@ -127,9 +131,11 @@ def get_class_info(class_id):
                 info.append("")
         info.append(tot)
         infos.append(info)
+        if canceled_list:
+            canceled_infos.append((student.id, student.name, ','.join(canceled_list)))
 
     tot_info = ("报名人数", students_cnt), ("报名人次", subjects_cnt), ("班级总费用", class_tot)
-    return infos, tot_info
+    return infos, tot_info, canceled_infos
 
 
 def download_excel(filename, sheet_names, **kwargs):

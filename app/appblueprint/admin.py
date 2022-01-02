@@ -176,8 +176,11 @@ def class_admin():
     permission = current_user.permission
     class_id = current_user.class_id
     if permission == 1:
-        infos, tot_info = get_class_info(class_id)
-        return render_template('classadmin.html', form=form, infos=infos, tot_info=tot_info)
+        infos, tot_info, canceled_infos = get_class_info(class_id)
+        for i in canceled_infos:
+            print(i)
+        return render_template('classadmin.html', form=form, infos=infos, tot_info=tot_info,
+                               canceled_infos=canceled_infos)
     return render_template("permission_deny.html")
 
 
@@ -449,7 +452,7 @@ def edit_student(student_id):
 
 @admin_bp.route('/class_info/<int:class_id>')
 def show_class_info(class_id):
-    infos, tot_info = get_class_info(class_id)
+    infos, tot_info, _ = get_class_info(class_id)
     grd, cls = parser_class_id(class_id)
     class_name = grd + str(cls)
     return render_template('class_info.html', infos=infos, tot_info=tot_info, class_id=class_id,

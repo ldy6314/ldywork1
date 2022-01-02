@@ -12,6 +12,7 @@
             <th>项目3</th>
             <th>项目4</th>
             <th>合计</th>
+            <th>编辑</th>>
             </thead>
             <tbody>
             {% for info in infos%}
@@ -19,6 +20,7 @@
                 {% for data in info[1:] %}
                 <td><small>{{data | safe}}</small></td>
                 {% endfor %}
+                 <td><a class="btn btn-sm btn-primary" href="/admin/edit_student/{{info[0]}}"><small>编辑</small></a></td>
             </tr>
             {% endfor %}
             {% for info in tot_info %}
