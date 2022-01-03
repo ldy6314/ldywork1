@@ -195,6 +195,11 @@ def edit_subject(subject_id):
         subject.price = form.price.data
         subject.remark = form.remark.data
         subject.canceled = 1 if form.canceled.data else 0
+        if subject.canceled:
+            subject.name = subject.name + "(已取消)"
+        else:
+            if "(已取消)" in subject.name:
+                subject.name = subject.name.strip("(已取消)")
         db.session.commit()
         flash("课程修改成功")
         return redirect(url_for('admin.school_admin'))
