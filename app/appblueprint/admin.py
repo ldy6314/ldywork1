@@ -57,6 +57,7 @@ def add_student():
         item[0].choices.insert(0, "不选")
 
     if form1.validate_on_submit():
+        print("{}{}添加学生".format(*parser_class_id(current_user.id)))
         class_id = current_user.class_id
         data = form1.data
         name = data['name']
@@ -177,8 +178,6 @@ def class_admin():
     class_id = current_user.class_id
     if permission == 1:
         infos, tot_info, canceled_infos = get_class_info(class_id)
-        for i in canceled_infos:
-            print(i)
         return render_template('classadmin.html', form=form, infos=infos, tot_info=tot_info,
                                canceled_infos=canceled_infos)
     return render_template("permission_deny.html")
@@ -336,6 +335,7 @@ def upload_class_table():
     # print("path=", path)
     form = UploadSubjectsForm()
     if form.validate_on_submit():
+        print("{}{}班上传表格".format(*parser_class_id(current_user.id)))
         f = form.file.data
         filename = f.filename
         f.save(path + filename)
@@ -423,6 +423,7 @@ def edit_student(student_id):
         item[0].choices.insert(0, "不选")
     student = Student.query.filter_by(id=student_id).first()
     if form1.validate_on_submit():
+        print("{}{}修改学生信息".format(*parser_class_id(current_user.id)))
         data = form1.data
         con1 = data['contact1']
         con2 = data['contact2']

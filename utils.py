@@ -107,7 +107,6 @@ def get_users_information(filename):
 
 
 def get_class_info(class_id):
-    print(class_id)
     cls = Class.query.filter_by(id=class_id).first()
     infos = []
     canceled_infos = []
