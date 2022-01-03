@@ -55,7 +55,7 @@
                 {% for data in info[1:] %}
                 <td><small>{{data | safe}}</small></td>
                 {% endfor %}
-                 <td><a class="btn btn-sm btn-primary disabled" href="/admin/edit_student/{{info[0]}}"><small>编辑</small></a></td>
+                 <td><a class="btn btn-sm btn-primary" href="/admin/edit_student/{{info[0]}}"><small>编辑</small></a></td>
             </tr>
             {% endfor %}
             {% for info in tot_info %}

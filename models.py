@@ -32,6 +32,12 @@ association_table = db.Table(
     db.Column('subject_id', db.Integer, db.ForeignKey('subject.id'))
 )
 
+association_table1 = db.Table(
+    'association1',
+    db.Column('fstudent_id', db.Integer, db.ForeignKey('fstudent.id')),
+    db.Column('subject_id', db.Integer, db.ForeignKey('subject.id'))
+)
+
 
 class Student(db.Model):
     __tablename__ = 'student'
@@ -44,6 +50,20 @@ class Student(db.Model):
         'Subject',
         secondary=association_table,
         back_populates='students'
+    )
+
+
+class Fstudent(db.Model):
+    __tablename__ = 'fstudent'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    class_id = db.Column(db.Integer, db.ForeignKey('class.id'))
+    name = db.Column(db.String(20))
+    contact1 = db.Column(db.String(20))
+    contact2 = db.Column(db.String(20))
+    subjects = db.relationship(
+        'Subject',
+        secondary=association_table1,
+        back_populates='fstudents'
     )
 
 
@@ -60,6 +80,13 @@ class Subject(db.Model):
         secondary=association_table,
         back_populates='subjects'
     )
+    fstudents = db.relationship(
+        'Fstudent',
+        secondary=association_table1,
+        back_populates='subjects'
+    )
+
+
 
 
 

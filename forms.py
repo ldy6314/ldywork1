@@ -90,3 +90,16 @@ class UploadUserForm(FlaskForm):
 
 class EditStudentForm(AddStudentForm):
     name = HiddenField()
+
+
+class AddFstudentForm(FlaskForm):
+    grd = SelectField('年级', choices=list("一二三四五六"))
+    cls = SelectField('班级', choices=list(range(1, 10)))
+    name = StringField('姓名', validators=[DataRequired()])
+    contact1 = StringField('联系电话1', validators=[DataRequired()])
+    contact2 = StringField('联系电话2')
+    sub1 = SelectField()
+    sub2 = SelectField()
+    sub3 = SelectField()
+    sub4 = SelectField()
+    submit = SubmitField('添加')

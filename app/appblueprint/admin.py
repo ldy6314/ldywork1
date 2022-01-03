@@ -1,6 +1,6 @@
 from flask import Blueprint, send_file, session, jsonify, flash, current_app, redirect, url_for
 from forms import AddForm, AddSubjectForm, UploadClassForm, AddStudentForm, UploadSubjectsForm, EditSubjectForm, \
-    UploadUserForm, EditStudentForm
+    UploadUserForm, EditStudentForm, AddFstudentForm
 from flask import render_template
 from models import Subject, Student, User, Class
 from extensions import db
@@ -57,7 +57,7 @@ def add_student():
         item[0].choices.insert(0, "不选")
 
     if form1.validate_on_submit():
-        print("{}{}添加学生".format(*parser_class_id(current_user.id)))
+        print("{}{}添加学生".format(*parser_class_id(current_user.class_id)))
         class_id = current_user.class_id
         data = form1.data
         name = data['name']
@@ -228,7 +228,6 @@ def delete_subject(subject_id):
 @admin_bp.route('/upload_subjects', methods=['GET', 'POST'])
 def upload_subjects():
     path = os.path.join(current_app.root_path, 'upload\\')
-    print("path=", path)
     form = UploadSubjectsForm()
     if form.validate_on_submit():
         f = form.file.data
@@ -265,7 +264,7 @@ def upload_subjects():
 
 @admin_bp.route('/download_class_table')
 def download_class_table():
-    class_id = current_user.id
+    class_id = current_user.class_id
     grd, cls = parser_class_id(class_id)
     # print(grd, cls)
     time_list = get_time_list()
@@ -335,7 +334,7 @@ def upload_class_table():
     # print("path=", path)
     form = UploadSubjectsForm()
     if form.validate_on_submit():
-        print("{}{}班上传表格".format(*parser_class_id(current_user.id)))
+        print("{}{}班上传表格".format(*parser_class_id(current_user.class_id)))
         f = form.file.data
         filename = f.filename
         f.save(path + filename)
@@ -423,7 +422,9 @@ def edit_student(student_id):
         item[0].choices.insert(0, "不选")
     student = Student.query.filter_by(id=student_id).first()
     if form1.validate_on_submit():
-        print("{}{}修改学生信息".format(*parser_class_id(current_user.id)))
+        grd, cls = parser_class_id(current_user.class_id)
+        name = student.name
+        print("{}{}修改学生{}信息".format(grd, cls, student.name))
         data = form1.data
         con1 = data['contact1']
         con2 = data['contact2']
@@ -432,7 +433,8 @@ def edit_student(student_id):
         if not num_of_subs:
             db.session.delete(student)
             db.session.commit()
-            flash('因修改该学生没有任何科目，删除该学生')
+            flash('因修改该后学生 {} 没有任何科目，删除学生 {}'.format(name, name))
+            return redirect(url_for("admin.class_admin"))
         else:
             student.contact1 = con1
             student.contact2 = con2
@@ -470,7 +472,7 @@ def show_subject_info(subject_id):
     res = Subject.query.filter_by(id=subject_id).first()
     students = res.students
     subject_name = res.name
-    students.sort(key=lambda x: x.id)
+    students = sorted(students, key=lambda x: x.id)
     infos = []
     for idx, student in enumerate(students, 1):
         grd, cls = parser_class_id(student.class_id)
@@ -533,4 +535,45 @@ def download_subject_table(subject_id):
                           head_merge_range=head_merge_range,
                           border_range=border_range,
                           col_width_infos=col_width_infos)
+
+
+@admin_bp.route("/add_fstudent")
+def add_fstudent():
+    form1 = AddFstudentForm()
+    time_list = get_time_list()
+    sublist = [form1.sub1, form1.sub2, form1.sub3, form1.sub4]
+    for item in zip(sublist, time_list):
+        item[0].label.text = item[1] + "课程"
+        item[0].choices = [subject.name for subject in Subject.query.filter_by(time=item[1]).all()]
+        item[0].choices.insert(0, "不选")
+
+    if form1.validate_on_submit():
+        print("{}{}添加学生".format(*parser_class_id(current_user.class_id)))
+        class_id = current_user.class_id
+        data = form1.data
+        name = data['name']
+        con1 = data['contact1']
+        con2 = data['contact2']
+        subs = [data['sub1'], data['sub2'], data['sub3'], data['sub4']]
+        res = Student.query.filter_by(name=name, class_id=class_id).all()
+        if not res:
+            student = Student(name=name, class_id=class_id, contact1=con1, contact2=con2)
+
+            for sub in subs:
+                if sub != "不选":
+                    sub = Subject.query.filter_by(name=sub).first()
+                    if sub:
+                        student.subjects.append(sub)
+
+            if len(student.subjects):
+                db.session.add(student)
+                db.session.commit()
+                flash('添加成功')
+            else:
+                flash('至少选择一项科目')
+
+        else:
+            flash('该学生已经存在')
+
+    return render_template("add_fstudent.html", form=form1)
 
