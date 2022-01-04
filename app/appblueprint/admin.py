@@ -537,7 +537,7 @@ def download_subject_table(subject_id):
                           col_width_infos=col_width_infos)
 
 
-@admin_bp.route("/add_fstudent")
+@admin_bp.route("/add_fstudent", methods=['GET', 'POST'])
 def add_fstudent():
     form1 = AddFstudentForm()
     time_list = get_time_list()
@@ -548,32 +548,33 @@ def add_fstudent():
         item[0].choices.insert(0, "不选")
 
     if form1.validate_on_submit():
-        print("{}{}添加学生".format(*parser_class_id(current_user.class_id)))
-        class_id = current_user.class_id
         data = form1.data
+        grd = data['grd']
+        cls = data['cls']
         name = data['name']
         con1 = data['contact1']
         con2 = data['contact2']
         subs = [data['sub1'], data['sub2'], data['sub3'], data['sub4']]
-        res = Student.query.filter_by(name=name, class_id=class_id).all()
-        if not res:
-            student = Student(name=name, class_id=class_id, contact1=con1, contact2=con2)
-
-            for sub in subs:
-                if sub != "不选":
-                    sub = Subject.query.filter_by(name=sub).first()
-                    if sub:
-                        student.subjects.append(sub)
-
-            if len(student.subjects):
-                db.session.add(student)
-                db.session.commit()
-                flash('添加成功')
-            else:
-                flash('至少选择一项科目')
-
-        else:
-            flash('该学生已经存在')
+        print(grd, cls, name, con1, con2, subs)
+        # res = Student.query.filter_by(name=name, class_id=class_id).all()
+        # if not res:
+        #     student = Student(name=name, class_id=class_id, contact1=con1, contact2=con2)
+        #
+        #     for sub in subs:
+        #         if sub != "不选":
+        #             sub = Subject.query.filter_by(name=sub).first()
+        #             if sub:
+        #                 student.subjects.append(sub)
+        #
+        #     if len(student.subjects):
+        #         db.session.add(student)
+        #         db.session.commit()
+        #         flash('添加成功')
+        #     else:
+        #         flash('至少选择一项科目')
+        #
+        # else:
+        #     flash('该学生已经存在')
 
     return render_template("add_fstudent.html", form=form1)
 
