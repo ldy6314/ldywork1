@@ -2,7 +2,7 @@ from flask import Blueprint, send_file, session, jsonify, flash, current_app, re
 from forms import AddForm, AddSubjectForm, UploadClassForm, AddStudentForm, UploadSubjectsForm, EditSubjectForm, \
     UploadUserForm, EditStudentForm, AddFstudentForm
 from flask import render_template
-from models import Subject, Student, User, Class
+from models import Subject, Student, User, Class, Fstudent
 from extensions import db
 from flask_login import current_user
 from openpyxl import Workbook
@@ -106,14 +106,6 @@ def add_subject():
 
 @admin_bp.route('/download_subjects')
 def download_subjects():
-    # def download_excel(filename, sheet_names, **kwargs):
-    #     """
-    #       col_name
-    #       data_list
-    #       head_merge_range
-    #       border_range
-    #       cols_width_info
-    #     """
     filename = "课程信息表.xlsx"
     sheet_names = ["课程信息表"]
     col_name = ["编号", "名称", "时间", "价格", "备注"]
@@ -137,6 +129,20 @@ def download_subjects():
 def school_admin():
     permission = current_user.permission
     if permission == 2:
+        res1 = Fstudent.query.all()
+        finfos = []
+        for i in res1:
+            grd, cls = parser_class_id(i.class_id)
+            line = [i.name, grd + str(cls)]
+            subjects = i.subjects
+            for idx in range(4):
+                if idx < len(subjects):
+                    info = subjects[idx].name + '<br>' + subjects[idx].time
+                else:
+                    info = ""
+                line.append(info)
+            line.append(i.id)
+            finfos.append(line)
         form = UploadSubjectsForm()
         subjects = Subject.query.all()
         form1 = AddSubjectForm()
@@ -166,7 +172,8 @@ def school_admin():
         tot_info = "合计", student_cnt, subject_cnt, tot_cost
         class_infos.append(tot_info)
         return render_template('schooladmin.html', form=form, form1=form1, form2=form2, subjects=subjects, users=users,
-                               subjects_info=subjects_info, class_infos=class_infos, to_class_id=to_class_id)
+                               subjects_info=subjects_info, class_infos=class_infos, to_class_id=to_class_id,
+                               finfos=finfos)
     else:
         return render_template("permission_deny.html")
 
@@ -471,13 +478,16 @@ def show_class_info(class_id):
 def show_subject_info(subject_id):
     res = Subject.query.filter_by(id=subject_id).first()
     students = res.students
+    fstudents = res.fstudents
     subject_name = res.name
-    students = sorted(students, key=lambda x: x.id)
+    students.sort(key=lambda x: x.class_id)
     infos = []
     for idx, student in enumerate(students, 1):
         grd, cls = parser_class_id(student.class_id)
-        print(idx, grd+str(cls), student.name)
-        infos.append((idx, grd+str(cls), student.name))
+        infos.append((idx, grd + str(cls), student.name))
+    for idx, fstudent in enumerate(fstudents, len(students) + 1):
+        grd, cls = parser_class_id(fstudent.class_id)
+        infos.append((idx, grd + str(cls), fstudent.name))
     return render_template('subject_info.html', infos=infos, subject_id=subject_id, subject_name=subject_name)
 
 
@@ -516,6 +526,7 @@ def download_subject_table(subject_id):
     res = Subject.query.filter_by(id=subject_id).first()
     subject_name = res.name
     students = res.students
+    fstudents = res.fstudents
     students.sort(key=lambda s: s.class_id)
     filename = "{}俱乐部人员名单.xlsx".format(subject_name)
     sheet_names = [filename.strip('.xlsx')]
@@ -525,10 +536,15 @@ def download_subject_table(subject_id):
     data_list = [[]]
     for idx, student in enumerate(students, 1):
         grd, cls = parser_class_id(student.class_id)
-        info = [idx, grd+str(cls), student.name]
+        info = [idx, grd + str(cls), student.name]
         data_list[0].append(info)
 
-    border_range = "A{}:C{}".format(2, len(students) + 2)
+    for idx, fstudent in enumerate(fstudents, len(students) + 1):
+        grd, cls = parser_class_id(fstudent.class_id)
+        info = [idx, grd + str(cls), fstudent.name]
+        data_list[0].append(info)
+
+    border_range = "A{}:C{}".format(2, len(students) + len(fstudents) + 2)
     return download_excel(filename, sheet_names,
                           col_name=col_name,
                           data_list=data_list,
@@ -551,30 +567,179 @@ def add_fstudent():
         data = form1.data
         grd = data['grd']
         cls = data['cls']
+        class_id = to_class_id(grd + cls)
+        print(class_id)
         name = data['name']
         con1 = data['contact1']
         con2 = data['contact2']
         subs = [data['sub1'], data['sub2'], data['sub3'], data['sub4']]
-        print(grd, cls, name, con1, con2, subs)
-        # res = Student.query.filter_by(name=name, class_id=class_id).all()
-        # if not res:
-        #     student = Student(name=name, class_id=class_id, contact1=con1, contact2=con2)
-        #
-        #     for sub in subs:
-        #         if sub != "不选":
-        #             sub = Subject.query.filter_by(name=sub).first()
-        #             if sub:
-        #                 student.subjects.append(sub)
-        #
-        #     if len(student.subjects):
-        #         db.session.add(student)
-        #         db.session.commit()
-        #         flash('添加成功')
-        #     else:
-        #         flash('至少选择一项科目')
-        #
-        # else:
-        #     flash('该学生已经存在')
+        print(grd, cls, name, con1, con2, subs, class_id)
+        res = Fstudent.query.filter_by(name=name, class_id=class_id).first()
+        if not res:
+            fstudent = Fstudent(name=name, class_id=class_id, contact1=con1, contact2=con2)
+            for sub in subs:
+                if sub != "不选":
+                    sub = Subject.query.filter_by(name=sub).first()
+                    if sub:
+                        fstudent.subjects.append(sub)
+
+            if len(fstudent.subjects):
+                db.session.add(fstudent)
+                db.session.commit()
+                flash('添加成功')
+            else:
+                flash('至少选择一项科目')
+
+        else:
+            flash('该学生已经存在')
 
     return render_template("add_fstudent.html", form=form1)
 
+
+@admin_bp.route("/edit_fstudent/<int:fstudent_id>", methods=["POST", 'GET'])
+def edit_fstudent(fstudent_id):
+    form1 = EditStudentForm()
+    form1.submit.label.text = "修改"
+    time_list = get_time_list()
+    sublist = [form1.sub1, form1.sub2, form1.sub3, form1.sub4]
+    for item in zip(sublist, time_list):
+        item[0].label.text = item[1] + "课程"
+        item[0].choices = [subject.name for subject in Subject.query.filter_by(time=item[1]).all()]
+        item[0].choices.insert(0, "不选")
+    fstudent = Fstudent.query.filter_by(id=fstudent_id).first()
+    if form1.validate_on_submit():
+        grd, cls = parser_class_id(fstudent.class_id)
+        name = fstudent.name
+        print("{}{}修改学生{}信息".format(grd, cls, fstudent.name))
+        data = form1.data
+        con1 = data['contact1']
+        con2 = data['contact2']
+        subs = [data['sub1'], data['sub2'], data['sub3'], data['sub4']]
+        num_of_subs = 4 - subs.count('不选')
+        if not num_of_subs:
+            db.session.delete(fstudent)
+            db.session.commit()
+            flash('因修改该后学生 {} 没有任何科目，删除学生 {}'.format(name, name))
+            return redirect(url_for("admin.school_admin"))
+        else:
+            fstudent.contact1 = con1
+            fstudent.contact2 = con2
+            fstudent.subjects.clear()
+            for sub in subs:
+                if sub != "不选":
+                    sub = Subject.query.filter_by(name=sub).first()
+                    if sub:
+                        fstudent.subjects.append(sub)
+            db.session.commit()
+            flash('修改成功')
+
+    name = fstudent.name
+    form1.contact1.data = fstudent.contact1
+    form1.contact2.data = fstudent.contact2
+    subjects = fstudent.subjects
+    for subject in subjects:
+        idx = time_list.index(subject.time)
+        sublist[idx].data = subject.name
+
+    return render_template("editstudent.html", form=form1, name=name)
+
+
+@admin_bp.route('/upload_fstudents_table', methods=['GET', 'POST'])
+def upload_fstudents_table():
+    path = os.path.join(current_app.root_path, 'upload\\')
+    # print("path=", path)
+    form = UploadSubjectsForm()
+    if form.validate_on_submit():
+        f = form.file.data
+        filename = f.filename
+        f.save(path + filename)
+        try:
+            grd, cls, infos = get_students_information(path + filename, max_col=9, mode=1)
+            for i in infos:
+                grd, cls = i[1], i[2]
+                class_id = to_class_id(grd + str(cls))
+                res = Fstudent.query.filter_by(class_id=class_id, name=i[0]).all()
+                if not res:
+                    fstudent = Fstudent(class_id=class_id, name=i[0], contact1=i[1] if i[1] else "", contact2=i[2] if
+                    i[2] else "")
+
+                    for sub in i[-4:]:
+                        if sub:
+                            sub = Subject.query.filter_by(name=sub).first()
+                            if not sub:
+                                flash('表格填写有错误')
+                                return redirect_back('admin.class_admin')
+                            fstudent.subjects.append(sub)
+                else:
+                    flash("学生 {} 已经存在".format(i[0]))
+                db.session.commit()
+            flash("上传成功")
+        except Exception as e:
+            print(e)
+            flash('上传的表格不正确')
+            return redirect_back('admin.class_admin')
+
+    return render_template('upload_file.html', form=form)
+
+
+@admin_bp.route('/download_empty_table')
+def download_empty_table():
+    time_list = get_time_list()
+    subject_list = []
+    for time in time_list:
+        subjects = db.session.query(Subject.name).filter_by(time=time).all()
+        subjects = [i[0] for i in subjects]
+        subject_list.append(','.join(subjects))
+    wb = Workbook()
+    ws = wb.worksheets[0]
+    border = Border(
+        left=Side(border_style='thin', color="FF000000"),
+        right=Side(border_style='thin', color="FF000000"),
+        bottom=Side(border_style='thin', color="FF000000"),
+        top=Side(border_style='thin', color="FF000000")
+    )
+    align_center = Alignment(horizontal='center', vertical='center', wrapText=True)
+    ws.append(["教师子女报名表"])
+    ws.merge_cells("A1:I1")
+    ws["A1"].alignment = align_center
+    col_name = ["姓名", "年级", "班级", "联系电话1", "联系电话2"]
+    tm_lst = [tm + '项目' for tm in time_list]
+    col_name.extend(tm_lst)
+    ws.append(col_name)
+    dv = DataValidation(type="list", formula1='"一,二,三,四,五,六"', allow_blank=True)
+    dv.error = "输入的值不在下拉列表中"
+    dv.errorTitle = "错误"
+    dv.prompt = "从下拉列表中选择年级"
+    dv.promptTitle = "列表选择"
+    dv.add('B3:B50')
+    ws.add_data_validation(dv)
+    dv1 = DataValidation(type="list", formula1='"1,2,3,4,5,6,7,8"', allow_blank=True)
+    dv1.error = "输入的值不在下拉列表中"
+    dv1.errorTitle = "错误"
+    dv1.prompt = "从下拉列表中选择班级"
+    dv1.promptTitle = "列表选择"
+    dv1.add('C3:C50')
+    ws.add_data_validation(dv1)
+    for infos in zip(subject_list, ["F3:F50", "G3:G50", "H3:H50", "I3:I50"]):
+        dv = DataValidation(type="list", formula1='"{}"'.format(infos[0]), allow_blank=True)
+        dv.error = "输入的值不在下拉列表中"
+        dv.errorTitle = "错误"
+        dv.prompt = "请从下拉列表中选择课程"
+        dv.promptTitle = "列表选择"
+        dv.add(infos[1])
+        ws.add_data_validation(dv)
+
+    ws_area = ws["A2:I50"]
+    for row in ws_area:
+        for cell in row:
+            cell.alignment = align_center
+            cell.border = border
+    for i in "DEFGHI":
+        ws.column_dimensions[i].width = 18
+
+    virtual_book = BytesIO()
+    wb.save(virtual_book)
+    virtual_book.seek(0)
+    rv = send_file(virtual_book, as_attachment=True, attachment_filename="class_table.xlsx")
+    rv.headers['Content-Disposition'] += ";filename*=utf-8' '{}.xlsx".format(quote("教师子女报名表"))
+    return rv

@@ -77,14 +77,18 @@ def get_time_list():
     return time_list
 
 
-def get_students_information(filename):
+def get_students_information(filename, mode=0, min_row=3, max_row=50, max_col=7):
     print(filename)
     wb = load_workbook(filename)
     ws = wb.active
-    grd = ws['B1'].value
-    cls = ws['D1'].value
+    if not mode:
+        grd = ws['B1'].value
+        cls = ws['D1'].value
+    else:
+        grd = None
+        cls = None
     infos = []
-    for row in ws.iter_rows(min_row=3, max_row=50, max_col=7):
+    for row in ws.iter_rows(min_row=min_row, max_row=max_row, max_col=max_col):
         info = []
         for cell in row:
             info.append(cell.value)
