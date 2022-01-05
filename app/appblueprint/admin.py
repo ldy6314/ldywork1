@@ -2,7 +2,7 @@ from flask import Blueprint, send_file, session, jsonify, flash, current_app, re
 from forms import AddForm, AddSubjectForm, UploadClassForm, AddStudentForm, UploadSubjectsForm, EditSubjectForm, \
     UploadUserForm, EditStudentForm, AddFstudentForm
 from flask import render_template
-from models import Subject, Student, User, Class
+from models import Subject, Student, User, Class, Fstudent
 from extensions import db
 from flask_login import current_user
 from openpyxl import Workbook
@@ -106,14 +106,6 @@ def add_subject():
 
 @admin_bp.route('/download_subjects')
 def download_subjects():
-    # def download_excel(filename, sheet_names, **kwargs):
-    #     """
-    #       col_name
-    #       data_list
-    #       head_merge_range
-    #       border_range
-    #       cols_width_info
-    #     """
     filename = "课程信息表.xlsx"
     sheet_names = ["课程信息表"]
     col_name = ["编号", "名称", "时间", "价格", "备注"]
@@ -137,6 +129,20 @@ def download_subjects():
 def school_admin():
     permission = current_user.permission
     if permission == 2:
+        res1 = Fstudent.query.all()
+        finfos = []
+        for i in res1:
+            grd, cls = parser_class_id(i.class_id)
+            line = [i.name, grd+str(cls)]
+            subjects = i.subjects
+            for idx in range(4):
+                if idx < len(subjects):
+                    info = subjects[idx].name + '<br>' + subjects[idx].time
+                else:
+                    info = ""
+                line.append(info)
+            line.append(i.id)
+            finfos.append(line)
         form = UploadSubjectsForm()
         subjects = Subject.query.all()
         form1 = AddSubjectForm()
@@ -166,7 +172,8 @@ def school_admin():
         tot_info = "合计", student_cnt, subject_cnt, tot_cost
         class_infos.append(tot_info)
         return render_template('schooladmin.html', form=form, form1=form1, form2=form2, subjects=subjects, users=users,
-                               subjects_info=subjects_info, class_infos=class_infos, to_class_id=to_class_id)
+                               subjects_info=subjects_info, class_infos=class_infos, to_class_id=to_class_id,
+                               finfos=finfos)
     else:
         return render_template("permission_deny.html")
 
@@ -472,11 +479,10 @@ def show_subject_info(subject_id):
     res = Subject.query.filter_by(id=subject_id).first()
     students = res.students
     subject_name = res.name
-    students = sorted(students, key=lambda x: x.id)
+    students.sort(key=lambda x: x.class_id)
     infos = []
     for idx, student in enumerate(students, 1):
         grd, cls = parser_class_id(student.class_id)
-        print(idx, grd+str(cls), student.name)
         infos.append((idx, grd+str(cls), student.name))
     return render_template('subject_info.html', infos=infos, subject_id=subject_id, subject_name=subject_name)
 
@@ -551,30 +557,92 @@ def add_fstudent():
         data = form1.data
         grd = data['grd']
         cls = data['cls']
+        class_id = to_class_id(grd+cls)
+        print(class_id)
         name = data['name']
         con1 = data['contact1']
         con2 = data['contact2']
         subs = [data['sub1'], data['sub2'], data['sub3'], data['sub4']]
-        print(grd, cls, name, con1, con2, subs)
-        # res = Student.query.filter_by(name=name, class_id=class_id).all()
-        # if not res:
-        #     student = Student(name=name, class_id=class_id, contact1=con1, contact2=con2)
-        #
-        #     for sub in subs:
-        #         if sub != "不选":
-        #             sub = Subject.query.filter_by(name=sub).first()
-        #             if sub:
-        #                 student.subjects.append(sub)
-        #
-        #     if len(student.subjects):
-        #         db.session.add(student)
-        #         db.session.commit()
-        #         flash('添加成功')
-        #     else:
-        #         flash('至少选择一项科目')
-        #
-        # else:
-        #     flash('该学生已经存在')
+        print(grd, cls, name, con1, con2, subs, class_id)
+        res = Fstudent.query.filter_by(name=name, class_id=class_id).first()
+        if not res:
+            fstudent = Fstudent(name=name, class_id=class_id, contact1=con1, contact2=con2)
+            for sub in subs:
+                if sub != "不选":
+                    sub = Subject.query.filter_by(name=sub).first()
+                    if sub:
+                        fstudent.subjects.append(sub)
+
+            if len(fstudent.subjects):
+                db.session.add(fstudent)
+                db.session.commit()
+                flash('添加成功')
+            else:
+                flash('至少选择一项科目')
+
+        else:
+            flash('该学生已经存在')
 
     return render_template("add_fstudent.html", form=form1)
+
+
+@admin_bp.route("/edit_fstudent/<int:fstudent_id>", methods=["POST", 'GET'])
+def edit_fstudent(fstudent_id):
+    form1 = EditStudentForm()
+    form1.submit.label.text = "修改"
+    time_list = get_time_list()
+    sublist = [form1.sub1, form1.sub2, form1.sub3, form1.sub4]
+    for item in zip(sublist, time_list):
+        item[0].label.text = item[1] + "课程"
+        item[0].choices = [subject.name for subject in Subject.query.filter_by(time=item[1]).all()]
+        item[0].choices.insert(0, "不选")
+    fstudent = Fstudent.query.filter_by(id=fstudent_id).first()
+    if form1.validate_on_submit():
+        grd, cls = parser_class_id(fstudent.class_id)
+        name = fstudent.name
+        print("{}{}修改学生{}信息".format(grd, cls, fstudent.name))
+        data = form1.data
+        con1 = data['contact1']
+        con2 = data['contact2']
+        subs = [data['sub1'], data['sub2'], data['sub3'], data['sub4']]
+        num_of_subs = 4 - subs.count('不选')
+        if not num_of_subs:
+            db.session.delete(fstudent)
+            db.session.commit()
+            flash('因修改该后学生 {} 没有任何科目，删除学生 {}'.format(name, name))
+            return redirect(url_for("admin.school_admin"))
+        else:
+            fstudent.contact1 = con1
+            fstudent.contact2 = con2
+            fstudent.subjects.clear()
+            for sub in subs:
+                if sub != "不选":
+                    sub = Subject.query.filter_by(name=sub).first()
+                    if sub:
+                        fstudent.subjects.append(sub)
+            db.session.commit()
+            flash('修改成功')
+
+    name = fstudent.name
+    form1.contact1.data = fstudent.contact1
+    form1.contact2.data = fstudent.contact2
+    subjects = fstudent.subjects
+    for subject in subjects:
+        idx = time_list.index(subject.time)
+        sublist[idx].data = subject.name
+
+    return render_template("editstudent.html", form=form1, name=name)
+
+
+@admin_bp.route('/upload_fstudents_table', methods=['GET', 'POST'])
+def upload_fstudents_table():
+    path = os.path.join(current_app.root_path, 'upload\\')
+    # print("path=", path)
+    form = UploadSubjectsForm()
+    form.file.label.text = "上传fstudent报名表"
+    if form.validate_on_submit():
+        pass
+    
+    return render_template('upload_file.html', form=form)
+
 
