@@ -41,6 +41,7 @@ def add():
 
 @admin_bp.route('/add_student', methods=['GET', 'POST'])
 def add_student():
+    # return render_template("over.html")
     form1 = AddStudentForm()
     time_list = get_time_list()
     sublist = [form1.sub1, form1.sub2, form1.sub3, form1.sub4]
@@ -96,9 +97,9 @@ def add_subject():
 
         db.session.add(subject)
         db.session.commit()
-        res = Subject.query.all()
-        for i in res:
-            print(i.name)
+        # res = Subject.query.all()
+        # for i in res:
+        #     print(i.name)
         return jsonify({'result': "插入成功", "type": "alert alert-success"})
     else:
         return jsonify({'result': "项目已经存在无法添加", "type": "alert  alert-danger"})
@@ -337,6 +338,7 @@ def download_class_table():
 
 @admin_bp.route("/upload_class_table", methods=['GET', 'POST'])
 def upload_class_table():
+    return render_template("over.html")
     path = os.path.join(current_app.root_path, 'upload\\')
     # print("path=", path)
     form = UploadSubjectsForm()
@@ -466,7 +468,8 @@ def edit_student(student_id):
 
 
 @admin_bp.route('/class_info/<int:class_id>')
-def show_class_info(class_id):
+def \
+        show_class_info(class_id):
     infos, tot_info, _ = get_class_info(class_id)
     grd, cls = parser_class_id(class_id)
     class_name = grd + str(cls)
@@ -493,12 +496,12 @@ def show_subject_info(subject_id):
 
 @admin_bp.route('/download_class_info/<int:class_id>')
 def download_class_info(class_id):
-    infos, tot_info = get_class_info(class_id)
+    infos, tot_info, _ = get_class_info(class_id)
     grd, cls = parser_class_id(class_id)
     class_name = grd + str(cls)
     filename = "{}报名信息表.xlsx".format(class_name)
     sheet_names = [filename.strip('.xlsx')]
-    col_name = ["姓名", "电话1", "电话2", "项目1", "项目2", "项目3", "项目4" "合计"]
+    col_name = ["姓名", "电话1", "电话2", "项目1", "项目2", "项目3", "项目4", "合计"]
     head_merge_range = "A1:H1"
     col_width_infos = {"B": 15, "C": 15, "D": 25, "E": 25, "F": 25, "G": 25}
     data_list = [[]]
@@ -512,7 +515,7 @@ def download_class_info(class_id):
     for info in tot_info:
         line.extend(info)
     data_list[0].append(line)
-    border_range = "A{}:H{}".format(1, len(infos) + 3)
+    border_range = ["A{}:H{}".format(1, len(infos) + 3)]
     return download_excel(filename, sheet_names,
                           col_name=col_name,
                           data_list=data_list,
@@ -544,7 +547,7 @@ def download_subject_table(subject_id):
         info = [idx, grd + str(cls), fstudent.name]
         data_list[0].append(info)
 
-    border_range = "A{}:C{}".format(2, len(students) + len(fstudents) + 2)
+    border_range = ["A{}:C{}".format(2, len(students) + len(fstudents) + 2)]
     return download_excel(filename, sheet_names,
                           col_name=col_name,
                           data_list=data_list,
@@ -568,12 +571,12 @@ def add_fstudent():
         grd = data['grd']
         cls = data['cls']
         class_id = to_class_id(grd + cls)
-        print(class_id)
+        # print(class_id)
         name = data['name']
         con1 = data['contact1']
         con2 = data['contact2']
         subs = [data['sub1'], data['sub2'], data['sub3'], data['sub4']]
-        print(grd, cls, name, con1, con2, subs, class_id)
+        # print(grd, cls, name, con1, con2, subs, class_id)
         res = Fstudent.query.filter_by(name=name, class_id=class_id).first()
         if not res:
             fstudent = Fstudent(name=name, class_id=class_id, contact1=con1, contact2=con2)
@@ -644,6 +647,14 @@ def edit_fstudent(fstudent_id):
     return render_template("editstudent.html", form=form1, name=name)
 
 
+@admin_bp.route("/delete_fstudent/<int:fstudent_id>", methods=["POST", 'GET'])
+def delete_fstudent(fstudent_id):
+    fstudent = Fstudent.query.filter_by(id=fstudent_id).first()
+    db.session.delete(fstudent)
+    flash("已经删除 {}".format(fstudent.name))
+    db.session.commit()
+    return redirect_back('admin.school_admin')
+
 @admin_bp.route('/upload_fstudents_table', methods=['GET', 'POST'])
 def upload_fstudents_table():
     path = os.path.join(current_app.root_path, 'upload\\')
@@ -660,8 +671,8 @@ def upload_fstudents_table():
                 class_id = to_class_id(grd + str(cls))
                 res = Fstudent.query.filter_by(class_id=class_id, name=i[0]).all()
                 if not res:
-                    fstudent = Fstudent(class_id=class_id, name=i[0], contact1=i[1] if i[1] else "", contact2=i[2] if
-                    i[2] else "")
+                    fstudent = Fstudent(class_id=class_id, name=i[0], contact1=i[3] if i[3] else "", contact2=i[4] if
+                    i[4] else "")
 
                     for sub in i[-4:]:
                         if sub:
@@ -743,3 +754,114 @@ def download_empty_table():
     rv = send_file(virtual_book, as_attachment=True, attachment_filename="class_table.xlsx")
     rv.headers['Content-Disposition'] += ";filename*=utf-8' '{}.xlsx".format(quote("教师子女报名表"))
     return rv
+
+
+@admin_bp.route('/download_all_subjects')
+def download_all_subjects():
+    data_list = []
+    sheet_names = []
+    filename = "{}.xlsx".format("俱乐部名单汇总表")
+    border_range = []
+    res = Subject.query.all()
+    for subject in res:
+        data_list.append([])
+        subject_name = subject.name
+        students = subject.students
+        fstudents = subject.fstudents
+        students.sort(key=lambda s: s.class_id)
+
+        sheet_names.append(subject_name+'俱乐部名单')
+        col_name = ["编号", "班级", "姓名", "电话1", '电话2']
+        head_merge_range = "A1:E1"
+        col_width_infos = {"B": 15, "C": 15, "D": 20, "E": 20 }
+        for idx, student in enumerate(students, 1):
+            grd, cls = parser_class_id(student.class_id)
+            con1 = student.contact1 if student.contact1 else ""
+            con2 = student.contact2 if student.contact2 else ""
+            info = [idx, grd + str(cls), student.name, con1, con2]
+            data_list[-1].append(info)
+
+        for idx, fstudent in enumerate(fstudents, len(students) + 1):
+            grd, cls = parser_class_id(fstudent.class_id)
+            con1 = fstudent.contact1 if student.contact1 else ""
+            con2 = fstudent.contact2 if student.contact2 else ""
+            info = [idx, grd + str(cls), fstudent.name, con1, con2]
+            data_list[-1].append(info)
+
+        border_range.append("A{}:E{}".format(2, len(students) + len(fstudents) + 2))
+    return download_excel(filename, sheet_names,
+                          col_name=col_name,
+                          data_list=data_list,
+                          head_merge_range=head_merge_range,
+                          border_range=border_range,
+                          col_width_infos=col_width_infos)
+
+
+@admin_bp.route('/download_all_classes')
+def download_all_classes():
+    data_list = []
+    sheet_names = []
+    filename = "{}.xlsx".format("全校班级总表")
+    border_range = []
+    res = Class.query.all()
+    for cls_ in res:
+        data_list.append([])
+        class_id = cls_.id
+        infos, tot_info, _ = get_class_info(class_id)
+        grd, cls = parser_class_id(class_id)
+        class_name = grd + str(cls)
+        sheet_names.append(class_name+'报名汇总表')
+        col_name = ["姓名", "电话1", "电话2", "项目1", "项目2", "项目3", "项目4", "合计"]
+        head_merge_range = "A1:H1"
+        col_width_infos = {"B": 15, "C": 15, "D": 25, "E": 25, "F": 25, "G": 25}
+
+        for student in infos:
+            info = [student[1], student[2], student[3]]
+            for i in range(4, 8):
+                info.append(student[i].replace('<br>', "\n"))
+            info.append(student[8])
+            data_list[-1].append(info)
+        line = []
+        for info in tot_info:
+            line.extend(info)
+        data_list[-1].append(line)
+        border_range.append("A{}:H{}".format(1, len(infos) + 3))
+    return download_excel(filename, sheet_names,
+                          col_name=col_name,
+                          data_list=data_list,
+                          head_merge_range=head_merge_range,
+                          border_range=border_range,
+                          col_width_infos=col_width_infos)
+
+
+@admin_bp.route('/download_school_infos')
+def download_school_infos():
+    class_list = Class.query.all()
+    class_infos = []
+    student_cnt = 0
+    subject_cnt = 0
+    tot_cost = 0
+    for cls in class_list:
+        info = get_class_info(cls.id)[1]
+        clsname = parser_class_id(cls.id)
+        clsname = clsname[0] + str(clsname[1])
+        class_infos.append((clsname, info[0][1], info[1][1], info[2][1]))
+        student_cnt += info[0][1]
+        subject_cnt += info[1][1]
+        tot_cost += info[2][1]
+
+    tot_info = "合计", student_cnt, subject_cnt, tot_cost
+    class_infos.append(tot_info)
+    data_list = [class_infos]
+    filename = "班级汇总表.xlsx"
+    sheet_names = ['全校班级汇总表']
+    col_name = ['班级', '报名人数', '报名人次', '收费合计']
+    border_range = ["A{}:D{}".format(2, len(class_infos)+2)]
+    head_merge_range = "A1:D1"
+    col_width_infos = []
+    return download_excel(filename, sheet_names,
+                          col_name=col_name,
+                          data_list=data_list,
+                          head_merge_range=head_merge_range,
+                          border_range=border_range,
+                          col_width_infos=col_width_infos)

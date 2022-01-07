@@ -78,7 +78,7 @@ def get_time_list():
 
 
 def get_students_information(filename, mode=0, min_row=3, max_row=50, max_col=7):
-    print(filename)
+    # print(filename)
     wb = load_workbook(filename)
     ws = wb.active
     if not mode:
@@ -150,6 +150,15 @@ def download_excel(filename, sheet_names, **kwargs):
       cols_width_info
     """
     wb = Workbook()
+    border = Border(
+        left=Side(border_style='thin', color="FF000000"),
+        right=Side(border_style='thin', color="FF000000"),
+        bottom=Side(border_style='thin', color="FF000000"),
+        top=Side(border_style='thin', color="FF000000")
+    )
+    align_center = Alignment(horizontal='center', vertical='center', wrapText=True)
+    for idx, sheet_name in enumerate(sheet_names, 0):
+        wb.create_sheet(sheet_name, index=idx)
     for idx, sheet_name in enumerate(sheet_names):
         ws = wb.worksheets[idx]
         # 表头部分
@@ -169,17 +178,12 @@ def download_excel(filename, sheet_names, **kwargs):
         head_merge_range = kwargs.get('head_merge_range', None)
         if head_merge_range:
             ws.merge_cells(head_merge_range)
-        border = Border(
-            left=Side(border_style='thin', color="FF000000"),
-            right=Side(border_style='thin', color="FF000000"),
-            bottom=Side(border_style='thin', color="FF000000"),
-            top=Side(border_style='thin', color="FF000000")
-        )
-        align_center = Alignment(horizontal='center', vertical='center', wrapText=True)
+            ws["A1"].alignment = align_center
+
         # 格式修饰区域1
         border_range = kwargs.get('border_range', None)
         if border_range:
-            ws_area = ws[border_range]
+            ws_area = ws[border_range[idx]]
             for row in ws_area:
                 for cell in row:
                     cell.alignment = align_center
