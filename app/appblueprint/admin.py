@@ -117,7 +117,7 @@ def download_subjects():
     for idx, subject in enumerate(res, 1):
         info = [idx, subject.name, subject.time, subject.price, subject.remark]
         data_list[0].append(info)
-    border_range = "A{}:E{}".format(1, len(res) + 2)
+    border_range = ["A{}:E{}".format(1, len(res) + 2)]
     return download_excel(filename, sheet_names,
                           col_name=col_name,
                           data_list=data_list,
