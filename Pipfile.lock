@@ -1,11 +1,11 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "fd3c5af9a216349f179b6c76dbb3ffa45c4e496b8e16cd0f8660c2b0abf60022"
+            "sha256": "e95f027193b0896b640ee6dfff7da83d01d28adc385839f4c31346eec3fb6fbd"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.7"
+            "python_version": "3.9"
         },
         "sources": [
             {
@@ -26,11 +26,11 @@
         },
         "bootstrap-flask": {
             "hashes": [
-                "sha256:1c47a35b26b2ea2eaa0326b416c557aee77c7802f188055a8cfc4520a5cfdba2",
-                "sha256:74a333756e997f2bb7d2d39a080eb2d1b4fd9da225f6cd5b56f0488ae5fe48ed"
+                "sha256:a097ea7cdb219648253cde95ab36aedcf929459881fff476edc699e2c0f6a654",
+                "sha256:d2d18931720f7b4440d99c179c89772ca2f10d54fdff955a22f2925ff44ef133"
             ],
             "index": "pypi",
-            "version": "==1.8.0"
+            "version": "==2.0.0"
         },
         "click": {
             "hashes": [
