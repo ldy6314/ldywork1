@@ -797,6 +797,30 @@ def download_all_subjects():
                           col_width_infos=col_width_infos)
 
 
+@admin_bp.route('/download_subjects_tot')
+def download_subjects_tot():
+    filename = '各俱乐部人数汇总.xlsx'
+    res = Subject.query.all()
+    data_list = []
+    col_name = ["课程名称", "报名人数"]
+    sheet_names = []
+    for data in res:
+        data_list.append([])
+
+    head_merge_range = "A:C"
+    border_range = "A:E",
+    col_width_infos = {}
+
+    return download_excel(filename, sheet_names,
+                          col_name=col_name,
+                          data_list=data_list,
+                          head_merge_range=head_merge_range,
+                          border_range=border_range,
+                          col_width_infos=col_width_infos)
+
+
+
+
 @admin_bp.route('/download_all_classes')
 def download_all_classes():
     data_list = []

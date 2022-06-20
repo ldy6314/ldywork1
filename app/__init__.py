@@ -13,6 +13,7 @@ def create_app(config_name=None):
     app = Flask("app")
     app.config.from_object(config[config_name])
     bootstrap.init_app(app)
+    app.config['BOOTSTRAP_SERVE_LOCAL'] = True
     db.init_app(app)
     csrf.init_app(app)
 
